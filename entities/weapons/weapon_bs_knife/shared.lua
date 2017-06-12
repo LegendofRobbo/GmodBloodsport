@@ -65,6 +65,7 @@ function SWEP:Deploy()
 
 	self.Weapon:SendWeaponAnim(ACT_VM_DRAW)
 	self.Weapon:SetNextPrimaryFire(CurTime() + 1)
+	self:SetHoldType( "knife" )
 
 	self.Weapon:EmitSound("weapons/knife/knife_deploy1.wav", 50, 100)
 
@@ -85,12 +86,12 @@ function SWEP:PrimaryAttack()
 	local addupward = Vector( 0, 0, 0 )
 	if self.Owner:IsOnGround() then self.Owner:SetPos( self.Owner:GetPos() + Vector( 0, 0, 5 ) ) addupward = Vector( 0, 0, 100 ) end
 	self.Owner:SetVelocity( self.Owner:EyeAngles():Forward() * 400 + addupward )
-	self.LungeTime = CurTime() + 0.4
+	self.LungeTime = CurTime() + 0.45
 	self.ReboundTime = CurTime() + 0.9
 	self.LungeHasHit = false
 
-	if SERVER then 
-		self.Owner:EmitSound( "weapons/iceaxe/iceaxe_swing1.wav", 90, math.random( 50, 60 ) ) 
+	if SERVER then
+		self.Owner:EmitSound( "weapons/knife/knife_slash1.wav", 90, math.random( 60, 70 ), 0.5 ) 
 	end
 end
 
@@ -107,8 +108,22 @@ function SWEP:Think()
 			maxs = Vector( siz, siz, siz )
 		} )
 		if tr.Entity and tr.Entity:IsPlayer() then
-			tr.Entity:Kill()
-			tr.Entity:EmitSound( "weapons/knife/knife_stab.wav", 90, 120 ) 
+--			tr.Entity:Kill()
+			local d = DamageInfo()
+			d:SetDamage( 120 )
+			d:SetAttacker( self.Owner )
+			d:SetDamageType( DMG_SLASH )
+			tr.Entity:TakeDamageInfo( d )
+
+			local effectdata = EffectData()
+			effectdata:SetOrigin( tr.HitPos )
+			effectdata:SetNormal( tr.HitNormal )
+			effectdata:SetMagnitude( 1 )
+			effectdata:SetScale( 15 )
+			effectdata:SetColor( 0 )
+			effectdata:SetFlags( 3 )
+			util.Effect( "bloodspray", effectdata, true, true )
+			tr.Entity:EmitSound( "weapons/knife/knife_stab.wav", 90, 150 )
 			self.LungeHasHit = true
 		end
 	elseif self.LungeTime < CurTime() and self.ReboundTime > CurTime() and !self.LungeHasHit then

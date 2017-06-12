@@ -1,1 +1,0 @@
-print( "Client module testing successful!" )
