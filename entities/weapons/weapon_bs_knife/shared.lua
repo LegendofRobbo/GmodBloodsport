@@ -39,7 +39,9 @@ SWEP.RunArmOffset 		= Vector (0.3671, 0.1571, 5.7856)
 SWEP.RunArmAngle	 		= Vector (-37.4833, 2.7476, 0)
 
 SWEP.Sequence			= 0
-SWEP.NxLunge			= 0
+SWEP.LungeTime = 0
+SWEP.ReboundTime = 0
+SWEP.LungeHasHit = true
 
 /*---------------------------------------------------------
    Name: SWEP:Precache()
@@ -69,75 +71,70 @@ function SWEP:Deploy()
 	return true
 end
 
-/*---------------------------------------------------------
-   Name: SWEP:PrimaryAttack()
-   Desc: +attack1 has been pressed.
----------------------------------------------------------*/
+
 function SWEP:PrimaryAttack()
 
 	self.Weapon:SendWeaponAnim(ACT_VM_IDLE)
 	local vm = self.Owner:GetViewModel()
 	vm:SetSequence( vm:LookupSequence( "stab" ) )
 
-	self.Weapon:SetNextPrimaryFire(CurTime() + 1)
-	self.Weapon:SetNextSecondaryFire(CurTime() + 1)
+	self.Weapon:SetNextPrimaryFire(CurTime() + 1.5)
+	self.Weapon:SetNextSecondaryFire(CurTime() + 1.5)
 	self.Owner:SetAnimation(PLAYER_ATTACK1)
 
-	if self.NxLunge and self.NxLunge < CurTime() then
-		local addupward = Vector( 0, 0, 0 )
-		if self.Owner:IsOnGround() then self.Owner:SetPos( self.Owner:GetPos() + Vector( 0, 0, 5 ) ) addupward = Vector( 0, 0, 100 ) end
-		self.Owner:SetVelocity( self.Owner:EyeAngles():Forward() * 400 + addupward )
-		self.NxLunge = CurTime() + 1
-		if SERVER then 
-			self.Owner:EmitSound( "weapons/iceaxe/iceaxe_swing1.wav", 90, math.random( 50, 55 ) ) 
-		end
+	local addupward = Vector( 0, 0, 0 )
+	if self.Owner:IsOnGround() then self.Owner:SetPos( self.Owner:GetPos() + Vector( 0, 0, 5 ) ) addupward = Vector( 0, 0, 100 ) end
+	self.Owner:SetVelocity( self.Owner:EyeAngles():Forward() * 400 + addupward )
+	self.LungeTime = CurTime() + 0.4
+	self.ReboundTime = CurTime() + 0.9
+	self.LungeHasHit = false
+
+	if SERVER then 
+		self.Owner:EmitSound( "weapons/iceaxe/iceaxe_swing1.wav", 90, math.random( 50, 60 ) ) 
 	end
-/*
-
-	self.Weapon:SendWeaponAnim(ACT_VM_IDLE)
-	local Animation = self.Owner:GetViewModel()
-	Animation:SetSequence(Animation:LookupSequence("midslash" .. math.random(1, 2)))
-
-
-	self:SetHoldType("knife")
---	timer.Simple(1, function() if self:IsValid() then self:SetHoldType("normal") end end)
-
-	timer.Simple( 0.1, function()
-	if ( !IsValid( self ) || !IsValid( self.Owner ) || !self.Owner:GetActiveWeapon() || self.Owner:GetActiveWeapon() != self || CLIENT ) then return end
-	self:DealDamage( anim )
-	self.Owner:EmitSound( "weapons/slam/throw.wav" )
-	end )
-
-	timer.Simple( 0.02, function()
-	if ( !IsValid( self ) || !IsValid( self.Owner ) || !self.Owner:GetActiveWeapon() || self.Owner:GetActiveWeapon() != self ) then return end
-	self.Owner:ViewPunch( Angle(-0.1, -0.3, 0.5) )
-	end )
-
-	timer.Simple( 0.2, function()
-	if ( !IsValid( self ) || !IsValid( self.Owner ) || !self.Owner:GetActiveWeapon() || self.Owner:GetActiveWeapon() != self ) then return end
-	self.Owner:ViewPunch( Angle( math.Rand(0.2,0.5), 0.5, -0.5 ) )
-	end )
-
-	if self.Weapon:GetNetworkedBool("Holsted") then return end
-
-	self.Weapon:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
-	self.Weapon:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
-	self.Owner:SetAnimation(PLAYER_ATTACK1)
-
-
-
-	if ((game.SinglePlayer() and SERVER) or CLIENT) then
-		self.Weapon:SetNetworkedFloat("LastShootTime", CurTime())
-	end
-
-	self:IdleAnimation(1)
-*/
 end
 
-/*---------------------------------------------------------
-   Name: SWEP:SecondaryAttack()
-   Desc: +attack2 has been pressed.
----------------------------------------------------------*/
+
+function SWEP:Think()
+	if CLIENT then return end
+	if self.LungeTime > CurTime() and !self.LungeHasHit then
+		local siz = 6
+		tr = util.TraceHull( {
+			start = self.Owner:GetShootPos(),
+			endpos = self.Owner:GetShootPos() + self.Owner:GetAimVector() * 60,
+			filter = self.Owner,
+			mins = Vector( -siz, -siz, -siz ),
+			maxs = Vector( siz, siz, siz )
+		} )
+		if tr.Entity and tr.Entity:IsPlayer() then
+			tr.Entity:Kill()
+			tr.Entity:EmitSound( "weapons/knife/knife_stab.wav", 90, 120 ) 
+			self.LungeHasHit = true
+		end
+	elseif self.LungeTime < CurTime() and self.ReboundTime > CurTime() and !self.LungeHasHit then
+		local siz = 15
+		tr = util.TraceHull( {
+			start = self.Owner:GetShootPos(),
+			endpos = self.Owner:GetShootPos() + self.Owner:GetAimVector() * 60,
+			filter = self.Owner,
+			mins = Vector( -siz, -siz, -siz ),
+			maxs = Vector( siz, siz, siz )
+		} )
+		if tr.Entity and tr.Entity:IsPlayer() then
+			self.Owner:SetVelocity( self.Owner:GetVelocity() * -1.5 + Vector( 0, 0, 200 ) )
+			self.Owner:EmitSound( "physics/flesh/flesh_impact_hard1.wav" )
+--			tr.Entity:EmitSound( "weapons/knife/knife_stab.wav", 90, 120 ) 
+			self.LungeHasHit = true
+		end
+	else
+		self.LungeHasHit = true
+	end
+end
+
+
+
+
+
 function SWEP:SecondaryAttack()
 	/*
 	if self.Weapon:GetNetworkedBool("Holsted") or self.Owner:KeyDown(IN_SPEED) then return end

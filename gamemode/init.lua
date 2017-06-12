@@ -52,6 +52,12 @@ function GM:PlayerConnect( name, ip )
 end
 
 
+function GM:PlayerSpawn( ply )
+	self.BaseClass:PlayerSpawn( ply )
+	ply:SetTeam(1)
+	ply:SetModel( "models/player/kleiner.mdl" )
+end
+
 function GM:PlayerInitialSpawn( ply )
 	self.BaseClass:PlayerInitialSpawn( ply )
 	ply:SetTeam(1)
