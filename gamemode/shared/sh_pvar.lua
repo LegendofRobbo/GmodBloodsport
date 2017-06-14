@@ -66,17 +66,31 @@ end
 
 if SERVER then 
 	util.AddNetworkString( "PVar" )
+	local meta = FindMetaTable("Player")
 
 	local function SendPVar( ply, addr, typ )
 		if !ply.PVars then ply.PVars = {} end
-		if !ply.PVars[address] then return end
-		local data = ply.PVars[address]
+		if !ply.PVars[addr] then return end
+		local data = ply.PVars[addr]
 		net.Start( "PVar" )
-		net.WriteString( address )
+		net.WriteString( addr )
 		WriteWildcard( typ, data )
 		net.Send( ply )
 	end
+	
+	--[[
+	-- note: if your gonna add this you can't do local function local function meta:SendPVar, metafunctions cannot be local
 
+	local function meta:SendPVar(addr, typ)
+		if !self.PVars then self.PVars = {} end // meta function
+		if !ply.PVars[addr] then return end
+		local data = self.PVars[addr]
+		net.Start( "PVar" )
+		net.WriteString( addr )
+		WriteWildcard( typ, data )
+		net.Send( self )
+	end
+	]]-- 
 end
 
 if CLIENT then

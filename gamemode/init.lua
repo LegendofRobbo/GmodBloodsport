@@ -77,6 +77,7 @@ end
 function GM:PlayerLoadout( ply )
 	ply:Give( "weapon_physgun" )
 	ply:Give( "weapon_bs_knife" )
+	ply:Give( "weapon_bs_magnum" )
 	ply:SetRunSpeed( 500 )
 	ply:SetWalkSpeed( 350 )
 end

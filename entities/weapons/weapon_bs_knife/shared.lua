@@ -3,9 +3,10 @@
 --SWEP.Base 				= "weapon_melee_base"
 SWEP.Instructions   = "Use the pointy end on other people"
 SWEP.ViewModelFlip		= false
-SWEP.ViewModel			= "models/weapons/v_knife_t.mdl"
+SWEP.UseHands = true
+SWEP.ViewModel			= "models/weapons/cstrike/c_knife_t.mdl"
 SWEP.WorldModel			= "models/weapons/w_knife_ct.mdl"
-SWEP.ViewModelFOV 		= 70
+SWEP.ViewModelFOV 		= 60
 SWEP.BobScale 			= 1
 SWEP.HoldType			= "knife"
 SWEP.Spawnable			= true
@@ -42,10 +43,8 @@ SWEP.Sequence			= 0
 SWEP.LungeTime = 0
 SWEP.ReboundTime = 0
 SWEP.LungeHasHit = true
+SWEP.NextThrow = 0
 
-/*---------------------------------------------------------
-   Name: SWEP:Precache()
----------------------------------------------------------*/
 function SWEP:Precache()
 
     	util.PrecacheSound("weapons/knife/knife_slash1.wav")
@@ -58,13 +57,18 @@ function SWEP:Precache()
     	util.PrecacheSound("weapons/iceaxe/iceaxe_swing1.wav")
 end
 
+
+function SWEP:SetupDataTables()
+	self:NetworkVar( "Float", 0, "ThrowCharge" )
+end
+
 /*---------------------------------------------------------
    Name: SWEP:Deploy()
 ---------------------------------------------------------*/
 function SWEP:Deploy()
 
 	self.Weapon:SendWeaponAnim(ACT_VM_DRAW)
-	self.Weapon:SetNextPrimaryFire(CurTime() + 1)
+	self.Weapon:SetNextPrimaryFire(CurTime() + 0.5)
 	self:SetHoldType( "knife" )
 
 	self.Weapon:EmitSound("weapons/knife/knife_deploy1.wav", 50, 100)
@@ -83,9 +87,14 @@ function SWEP:PrimaryAttack()
 	self.Weapon:SetNextSecondaryFire(CurTime() + 1.5)
 	self.Owner:SetAnimation(PLAYER_ATTACK1)
 
-	local addupward = Vector( 0, 0, 0 )
-	if self.Owner:IsOnGround() then self.Owner:SetPos( self.Owner:GetPos() + Vector( 0, 0, 5 ) ) addupward = Vector( 0, 0, 100 ) end
-	self.Owner:SetVelocity( self.Owner:EyeAngles():Forward() * 400 + addupward )
+	local addupward = Vector( 0, 0, 50 )
+	if self.Owner:IsOnGround() then 
+		self.Owner:SetPos( self.Owner:GetPos() + Vector( 0, 0, 5 ) ) 
+		addupward = Vector( 0, 0, 100 ) 
+	end
+	local myang = self.Owner:EyeAngles()
+	myang = Angle( math.Clamp( myang.p, -20, 20 ), myang.y, 0 )
+	self.Owner:SetVelocity( myang:Forward() * 400 + addupward )
 	self.LungeTime = CurTime() + 0.45
 	self.ReboundTime = CurTime() + 0.9
 	self.LungeHasHit = false
@@ -151,115 +160,34 @@ end
 
 
 function SWEP:SecondaryAttack()
-	/*
-	if self.Weapon:GetNetworkedBool("Holsted") or self.Owner:KeyDown(IN_SPEED) then return end
+	if self.NextThrow > CurTime() then return end
 
-	// Holst/Deploy your fucking weapon
-	if (not self.Owner:IsNPC() and self.Owner:KeyDown(IN_USE)) then
-		bHolsted = !self.Weapon:GetDTBool(0)
-		self:SetHolsted(bHolsted)
+	self.Weapon:EmitSound("weapons/iceaxe/iceaxe_swing1.wav")
+	self.Weapon:SetNextPrimaryFire(CurTime() + 1 )
+	self.Weapon:SetNextSecondaryFire(CurTime() + 1 )
+	self.Weapon:SendWeaponAnim(ACT_VM_DRAW)
 
-		self.Weapon:SetNextPrimaryFire(CurTime() + 0.3)
-		self.Weapon:SetNextSecondaryFire(CurTime() + 0.3)
+	self.NextThrow = CurTime() + 3
 
-		self:SetIronsights(false)
+	if (SERVER) then
+		local knife = ents.Create("bs_knife_thrown")
+		knife:SetAngles(self.Owner:EyeAngles())
 
-		return
+		local pos = self.Owner:GetShootPos()
+		pos = pos + self.Owner:GetForward() * 5
+		pos = pos + self.Owner:GetRight() * 9
+		pos = pos + self.Owner:GetUp() * -5
+		knife:SetPos(pos)
+
+		knife:SetOwner(self.Owner)
+		knife:SetPhysicsAttacker(self.Owner)
+		knife:Spawn()
+		knife:Activate()
+
+		self.Owner:SetAnimation(PLAYER_ATTACK1)
+
+		local phys = knife:GetPhysicsObject()
+		phys:SetVelocity(self.Owner:GetAimVector() * 1200)
+		phys:AddAngleVelocity(Vector(0, 500, 0))
 	end
-
-	self.Weapon:SendWeaponAnim(ACT_VM_IDLE)
-	local Animation = self.Owner:GetViewModel()
-	Animation:SetSequence(Animation:LookupSequence("stab"))
-
-
-	self:SetHoldType("knife")
---	timer.Simple(1, function() if self:IsValid() then self:SetHoldType("normal") end end)
-
-	timer.Simple( 0.1, function()
-	if ( !IsValid( self ) || !IsValid( self.Owner ) || !self.Owner:GetActiveWeapon() || self.Owner:GetActiveWeapon() != self || CLIENT ) then return end
-	self:DealDamage( anim )
-	self.Owner:EmitSound( "weapons/slam/throw.wav" )
-	end )
-
-	timer.Simple( 0.02, function()
-	if ( !IsValid( self ) || !IsValid( self.Owner ) || !self.Owner:GetActiveWeapon() || self.Owner:GetActiveWeapon() != self ) then return end
-	self.Owner:ViewPunch( Angle(-0.3, -0.3, 0.5) )
-	end )
-
-	timer.Simple( 0.2, function()
-	if ( !IsValid( self ) || !IsValid( self.Owner ) || !self.Owner:GetActiveWeapon() || self.Owner:GetActiveWeapon() != self ) then return end
-	self.Owner:ViewPunch( Angle( math.Rand(0.5,1.5), 0.5, -0.5 ) )
-	end )
-
-	if self.Weapon:GetNetworkedBool("Holsted") then return end
-
-	self.Weapon:SetNextPrimaryFire(CurTime() + self.Secondary.Delay)
-	self.Weapon:SetNextSecondaryFire(CurTime() + self.Secondary.Delay)
-	self.Owner:SetAnimation(PLAYER_ATTACK1)
-
-
-
-	if ((game.SinglePlayer() and SERVER) or CLIENT) then
-		self.Weapon:SetNetworkedFloat("LastShootTime", CurTime())
-	end
-
-	self:IdleAnimation(1)
-end
-
-function SWEP:DealDamage( anim )
-	local anim = self:GetSequenceName(self.Owner:GetViewModel():GetSequence())
-
-	local tr = util.TraceLine( {
-		start = self.Owner:GetShootPos(),
-		endpos = self.Owner:GetShootPos() + self.Owner:GetAimVector() * self.HitDistance,
-		filter = self.Owner
-	} )
-
-	if ( !IsValid( tr.Entity ) ) then 
-		tr = util.TraceHull( {
-			start = self.Owner:GetShootPos(),
-			endpos = self.Owner:GetShootPos() + self.Owner:GetAimVector() * self.HitDistance,
-			filter = self.Owner,
-			mins = Vector( -10, -10, -8 ),
-			maxs = Vector( 10, 10, 8 )
-		} )
-	end
-
-	if ( tr.Hit ) then
-	if (tr.Entity:IsPlayer() or tr.Entity:IsNPC() or tr.Entity.Type == "nextbot") then 
-
-		local effectdata = EffectData()
-			effectdata:SetOrigin(tr.HitPos)
-			effectdata:SetStart(tr.HitPos)
-		util.Effect("BloodImpact", effectdata)
-
-		if ( anim == "stab" ) then
-		self.Weapon:EmitSound("weapons/knife/knife_stab.wav", 80, 120)
-		else
-		self.Weapon:EmitSound("weapons/knife/knife_hit"..math.random(1,4)..".wav", 80, 100)
-		end
-	else
-	self.Weapon:EmitSound( "weapons/knife/knife_hitwall1.wav", 70, math.Rand(85, 95) )
-	end
---	self.Weapon:SendWeaponAnim(ACT_VM_HITCENTER)
-
-	end
-
-
-	if ( IsValid( tr.Entity ) && ( tr.Entity:IsNPC() || tr.Entity:IsPlayer() || tr.Entity.Type == "nextbot" ||tr.Entity:GetClass() == "prop_physics" || tr.Entity:GetClass() == "func_breakable" || tr.Entity:Health() > 0 ) ) then
-		local dmginfo = DamageInfo()
-		if ( anim == "stab" ) then
-		dmginfo:SetDamage( math.random( 28, 32 ) )
-		else
-		dmginfo:SetDamage( math.random( 18, 22 ) )
-		end
-		dmginfo:SetDamageForce( self.Owner:GetRight() * 300 + self.Owner:GetForward() * 200 ) -- Yes we need those specific numbers
-		dmginfo:SetInflictor( self )
-		local attacker = self.Owner
-		if ( !IsValid( attacker ) ) then attacker = self end
-		dmginfo:SetAttacker( attacker )
-
-		tr.Entity:TakeDamageInfo( dmginfo )
-	end
-	*/
 end
