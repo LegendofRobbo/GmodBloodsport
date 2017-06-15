@@ -166,7 +166,7 @@ hook.Add("SetupMove", "Walljumping", function( ply, cmd )
 		local ef = EffectData()
 		ef:SetOrigin( ply:GetPos() )
 		ef:SetScale( 2 )
-		ef:SetStart( Vector(255, 255, 255) )
+		ef:SetStart( Vector(225, 225, 225) )
 		util.Effect( "bs_smoke_puff", ef )
 
 	end
