@@ -34,7 +34,7 @@ end
 
 local function ReadWildcard()
 	local typ = net.ReadUInt( 4 )
-	local val
+	local val = false
 	-- string
 	if typ == 1 then
 		val = net.ReadString()
@@ -68,39 +68,28 @@ if SERVER then
 	util.AddNetworkString( "PVar" )
 	local meta = FindMetaTable("Player")
 
-	local function SendPVar( ply, addr, typ )
-		if !ply.PVars then ply.PVars = {} end
-		if !ply.PVars[addr] then return end
-		local data = ply.PVars[addr]
-		net.Start( "PVar" )
-		net.WriteString( addr )
-		WriteWildcard( typ, data )
-		net.Send( ply )
-	end
-	
-	--[[
-	-- note: if your gonna add this you can't do local function local function meta:SendPVar, metafunctions cannot be local
-
-	local function meta:SendPVar(addr, typ)
-		if !self.PVars then self.PVars = {} end // meta function
-		if !ply.PVars[addr] then return end
+	function meta:SendPVar( addr, typ )
+		if !self.PVars then ply.PVars = {} end
+		if !self.PVars[addr] then return end
 		local data = self.PVars[addr]
 		net.Start( "PVar" )
 		net.WriteString( addr )
 		WriteWildcard( typ, data )
 		net.Send( self )
 	end
-	]]-- 
+
 end
 
 if CLIENT then
+	LocalPlayer().PVars = {}
+
 	net.Receive( "PVar", function() 
 		local addr = net.ReadString()
 		local val = ReadWildcard()
 		local me = LocalPlayer()
 
-		if !me.PVars then me.PVars = {} end
-		me.PVars[addr] = val
+		if !LocalPlayer().PVars then LocalPlayer().PVars = {} end
+		LocalPlayer().PVars[addr] = val
 	end )
 end
 
@@ -128,40 +117,40 @@ end
 function ply:SetPVarString( address, value )
 	if !self.PVars then self.PVars = {} end
 	self.PVars[address] = value
-	if SERVER then SendPVar( self, address, 1 ) end
+	if SERVER then self:SendPVar( address, 1 ) end
 end
 
 -- sets a PVar entity on a player ( <address> = string, <value> = entity )
 function ply:SetPVarEntity( address, value )
 	if !self.PVars then self.PVars = {} end
 	self.PVars[address] = value
-	if SERVER then SendPVar( self, address, 2 ) end
+	if SERVER then self:SendPVar( address, 2 ) end
 end
 
 -- sets a PVar float (number with digits) on a player ( <address> = string, <value> = number )
 function ply:SetPVarFloat( address, value )
 	if !self.PVars then self.PVars = {} end
 	self.PVars[address] = value
-	if SERVER then SendPVar( self, address, 3 ) end
+	if SERVER then self:SendPVar( address, 3 ) end
 end
 
 -- sets a PVar vector on a player ( <address> = string, <value> = vector )
 function ply:SetPVarVector( address, value )
 	if !self.PVars then self.PVars = {} end
 	self.PVars[address] = value
-	if SERVER then SendPVar( self, address, 4 ) end
+	if SERVER then self:SendPVar( address, 4 ) end
 end
 
 -- sets a PVar boolean (true or false) on a player ( <address> = string, <value> = boolean )
 function ply:SetPVarBool( address, value )
 	if !self.PVars then self.PVars = {} end
 	self.PVars[address] = value
-	if SERVER then SendPVar( self, address, 5 ) end
+	if SERVER then self:SendPVar( address, 5 ) end
 end
 
 -- sets a PVar angle on a player ( <address> = string, <value> = angle )
 function ply:SetPVarAngle( address, value )
 	if !self.PVars then self.PVars = {} end
 	self.PVars[address] = value
-	if SERVER then SendPVar( self, address, 6 ) end
+	if SERVER then self:SendPVar( address, 6 ) end
 end
