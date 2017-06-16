@@ -102,8 +102,9 @@ function GM:CalcView( ply, origin, angles, fov, znear, zfar )
 			start = trcstart,
 			endpos = trcend,
 			filter = ply,
+			mask = MASK_SOLID_BRUSHONLY,
 			mins = Vector( -siz, -siz, -siz ),
-			maxs = Vector( siz, siz, siz )
+			maxs = Vector( siz, siz, siz ),
 		} )
 
 		if tr.Hit then

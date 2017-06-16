@@ -84,7 +84,7 @@ function SWEP:PrimaryAttack()
 	vm:SetSequence( vm:LookupSequence( "stab" ) )
 
 	self.Weapon:SetNextPrimaryFire(CurTime() + 1.5)
-	self.Weapon:SetNextSecondaryFire(CurTime() + 1.5)
+	self.Weapon:SetNextSecondaryFire(CurTime() + 0.5)
 	self.Owner:SetAnimation(PLAYER_ATTACK1)
 
 	local addupward = Vector( 0, 0, 50 )
@@ -137,7 +137,7 @@ function SWEP:Think()
 		end
 	elseif self.LungeTime < CurTime() and self.ReboundTime > CurTime() and !self.LungeHasHit then
 		local siz = 15
-		tr = util.TraceHull( {
+		local tr = util.TraceHull( {
 			start = self.Owner:GetShootPos(),
 			endpos = self.Owner:GetShootPos() + self.Owner:GetAimVector() * 60,
 			filter = self.Owner,
@@ -156,6 +156,10 @@ function SWEP:Think()
 end
 
 
+function SWEP:GetViewModelPosition( pos, ang )
+--	if self.NextThrow > CurTime() then return pos + ang:Forward() * -100, ang end
+	return pos, ang
+end
 
 
 

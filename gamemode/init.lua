@@ -51,12 +51,35 @@ function GM:PlayerConnect( name, ip )
 	--bat me
 end
 
+local testers = {
+	"76561198028288732", -- me
+	"76561198083117557", -- lies
+	"76561198035059571", -- erad
+	"76561198097352513", -- zultan
+	"76561198028646454", -- malus
+	"76561198090537451", -- sync
+}
+
+function GM:CheckPassword( id64, ip, password, theirpass, name ) 
+	if password != "" and theirpass != password then
+		for k, v in pairs( player.GetAll() ) do v:ChatPrint( name.." [ "..id64.." ] tried to connect with the wrong password" ) end
+		return false, "Wrong password faggot!" 
+	end
+	if !table.HasValue( testers, id64 ) then
+		for k, v in pairs( player.GetAll() ) do v:ChatPrint( name.." [ "..id64.." ] tried to connect but isn't whitelisted" ) end
+		return false, "You aren't on the whitelist! contact LegendofRobbo if you want to get in"
+	end
+	return true
+end
+
 
 function GM:PlayerSpawn( ply )
 	self.BaseClass:PlayerSpawn( ply )
-	ply:SetPVarBool( "CanWallJump", 1 )
-	ply:SetTeam(1)
+	ply:SetPVarFloat( "CanWallJump", 1 )
+	ply:SetTeam( 1 )
 	ply:SetModel( "models/player/kleiner.mdl" )
+	ply:AllowFlashlight( true )
+	ply:SetCanZoom( false )
 end
 
 function GM:PlayerInitialSpawn( ply )
@@ -76,11 +99,13 @@ function GM:ShowHelp( ply )
 end
 
 function GM:PlayerLoadout( ply )
-	ply:Give( "weapon_physgun" )
+--	ply:Give( "weapon_physgun" )
 	ply:Give( "weapon_bs_knife" )
 	ply:Give( "weapon_bs_magnum" )
-	ply:SetRunSpeed( 500 )
+	ply:Give( "weapon_bs_harpoonbow" )
+	ply:SetRunSpeed( 400 )
 	ply:SetWalkSpeed( 350 )
+--	ply:SetJumpPower( 200 )
 end
 
 function GM:PlayerNoClip( ply )
@@ -106,41 +131,8 @@ function GM:OnPlayerHitGround( ply, water, floating_obj, speed )
 	end
 end
 
-/*
-hook.Add( "Think", "Walljumping", function() 
-	for k, v in pairs( player.GetAll() ) do
-
-		if !v:Alive() or v:GetPVar( "CanWallJump" ) < 1 or v.NextWallJump > CurTime() then continue end
-
-		local trcstart = v:GetPos() + v:GetAngles():Up() * 40 + v:GetAngles():Right() * 10
-		local trcend = v:GetPos() + v:GetAngles():Up() * 40 + v:GetAngles():Right() * -10
-		local siz = 10
-		local tr = util.TraceHull( {
-			start = trcstart,
-			endpos = trcend,
-			filter = v,
-			mins = Vector( -siz, -siz, -siz ),
-			maxs = Vector( siz, siz, siz )
-		} )
-
-		if tr.Hit and v:KeyDown( IN_JUMP ) then
-			if tr.Fraction < 1 then
-				v:SetVelocity( v:GetAngles():Up() * 250 + v:GetAngles():Right() * 300 )
-			else
-				v:SetVelocity( v:GetAngles():Up() * 250 + v:GetAngles():Right() * -300 )
-			end
-			v:EmitSound( "physics/flesh/flesh_impact_hard1.wav" )
-			v:SetPVarFloat( "CanWallJump", 0 )
-			v.NextWallJump = CurTime() + 0.2
-		end
-
-	end
-end )
-*/
-
-
 hook.Add("SetupMove", "Walljumping", function( ply, cmd )
-	if ply:IsOnGround() or !ply:Alive() or !cmd:KeyPressed( IN_JUMP ) or (ply:GetPVar( "CanWallJump" ) and ply:GetPVar( "CanWallJump" ) < 1) or (ply.NextWallJump and ply.NextWallJump > CurTime()) then return end
+	if ply:IsOnGround() or !ply:Alive() or ply:WaterLevel() > 1 or !cmd:KeyPressed( IN_JUMP ) or (ply:GetPVar( "CanWallJump" ) and ply:GetPVar( "CanWallJump" ) < 1) or (ply.NextWallJump and ply.NextWallJump > CurTime()) then return end
 
 	local trcstart = ply:GetPos() + ply:GetAngles():Up() * 40 + ply:GetAngles():Right() * 10
 	local trcend = ply:GetPos() + ply:GetAngles():Up() * 40 + ply:GetAngles():Right() * -10
@@ -149,6 +141,7 @@ hook.Add("SetupMove", "Walljumping", function( ply, cmd )
 		start = trcstart,
 		endpos = trcend,
 		filter = ply,
+		mask = MASK_SOLID_BRUSHONLY,
 		mins = Vector( -siz, -siz, -siz ),
 		maxs = Vector( siz, siz, siz )
 	} )

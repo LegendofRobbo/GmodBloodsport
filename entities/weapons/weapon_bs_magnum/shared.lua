@@ -140,7 +140,8 @@ function SWEP:SecondaryAttack()
 	self.Weapon:SetNextSecondaryFire( CurTime() + 0.1 )
 
 	self:SetZoomed( !self:GetZoomed() )
-	if SERVER then 
+	self:FireChargedShot()
+	if SERVER then
 		if self:GetZoomed() then self.Owner:SetFOV(60, 0.2) else self.Owner:SetFOV(0, 0.2) end
 	end
 end
@@ -186,6 +187,8 @@ function SWEP:Think()
 	if self:GetZoomed() and (!self.Owner:IsOnGround() or self.Owner:GetVelocity():Length() > 400 ) then 
 		self:SetZoomed( false )
 		self.Owner:SetFOV(0, 0.2)
+		self:FireChargedShot()
+--		self:SetBoolets( 0 )
 	end
 
 	if self:GetZoomed() then
@@ -197,23 +200,25 @@ function SWEP:Think()
 					self.Owner:EmitSound( "weapons/shotgun/shotgun_reload2.wav", 70, 70 )
 				end
 			end
-		elseif self:GetBoolets() > 0 then
-
-			self.Weapon:SetNextPrimaryFire( CurTime() + self.Primary.Delay * 2 )
-			self.Weapon:SetNextSecondaryFire( CurTime() + self.Primary.Delay * 2 )
-			for i = 1, self:GetBoolets() do 
-				timer.Simple( (i-1) * 0.05, function() if self:IsValid() then self:EmitSound(self.Primary.Sound) end end )
-			end
-			self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
-			self.Owner:SetAnimation( PLAYER_ATTACK1 )
-			if IsFirstTimePredicted() then self.Owner:ViewPunch( Angle( -self:GetBoolets(), 0, 0 ) ) end
-			self:CSShootBullet( 50, 0, self:GetBoolets(), 0.01 )
-			self:SetBoolets( 0 )
-			self.NxLoadBullet = CurTime() + 1
 		else
-			self:SetBoolets( 0 )
+			self:FireChargedShot()
 		end
 	end	
 
 
+end
+
+function SWEP:FireChargedShot()
+	if self:GetBoolets() < 1 then return end
+	self.Weapon:SetNextPrimaryFire( CurTime() + (self.Primary.Delay * 2) + (self:GetBoolets() * 0.1) )
+	self.Weapon:SetNextSecondaryFire( CurTime() + (self.Primary.Delay * 2) + (self:GetBoolets() * 0.1) )
+	for i = 1, self:GetBoolets() do 
+		timer.Simple( (i-1) * 0.05, function() if self:IsValid() then self:EmitSound(self.Primary.Sound) end end )
+	end
+	self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
+	self.Owner:SetAnimation( PLAYER_ATTACK1 )
+	if IsFirstTimePredicted() then self.Owner:ViewPunch( Angle( -self:GetBoolets(), 0, 0 ) ) end
+	self:CSShootBullet( 50, 0, self:GetBoolets(), 0.01 )
+	self:SetBoolets( 0 )
+	self.NxLoadBullet = CurTime() + 1
 end
