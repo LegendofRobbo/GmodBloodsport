@@ -83,7 +83,8 @@ end
 if CLIENT then
 	LocalPlayer().PVars = {}
 
-	net.Receive( "PVar", function() 
+	net.Receive( "PVar", function()
+		if !LocalPlayer():IsValid() then return end
 		local addr = net.ReadString()
 		local val = ReadWildcard()
 		local me = LocalPlayer()

@@ -1,5 +1,4 @@
 function EFFECT:Init(data)
-	print("FAG")
 	local emitter = ParticleEmitter(data:GetOrigin())
 	local col = data:GetStart()
 	local col2 = Color( col.x, col.y, col.z )
