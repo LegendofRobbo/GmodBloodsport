@@ -166,3 +166,13 @@ hook.Add("SetupMove", "Walljumping", function( ply, cmd )
 	end
 
 end)
+
+
+util.AddNetworkString( "DamageFlashes" )
+hook.Add( "EntityTakeDamage", "BSTakeDamage", function( ent, dmg ) 
+	if ent:IsPlayer() and ent:Alive() then
+		net.Start( "DamageFlashes" )
+		net.Send( ent )
+	end
+
+end )
