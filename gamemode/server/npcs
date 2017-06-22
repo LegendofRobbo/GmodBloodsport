@@ -1,4 +1,4 @@
-[==[ Functions / Declarations / Tables ]==]
+--[==[ Functions / Declarations / Tables ]==]--
 
 local meta = FindMetaTable("Player")
 
@@ -69,7 +69,7 @@ function NPCSAREFUCKINGGAY(ply, npc_type, weapon)
 end
 
 
-[==[ concommands / hooks ]==]
+--[==[ concommands / hooks ]==]--
 
 concommand.Add("Remove_NPCS", RemoveNPCS)
 
