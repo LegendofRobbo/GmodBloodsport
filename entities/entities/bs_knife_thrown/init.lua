@@ -102,7 +102,7 @@ function ENT:PhysicsCollide(data, phys)
 			self:Disable()
 		end
 
-		Ent:TakeDamage(100, self:GetOwner())
+		Ent:TakeDamage(100, self:GetOwner(), self )
 
 		if (Ent:IsPlayer() or Ent:IsNPC() or Ent:GetClass() == "prop_ragdoll") then 
 

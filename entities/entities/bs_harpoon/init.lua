@@ -73,7 +73,7 @@ function ENT:PhysicsCollide(data, phys)
 	
 	local Ent = data.HitEntity
 
-	if Ent:GetClass() == "bs_harpoon" then
+	if Ent:IsValid() and Ent:GetClass() == "bs_harpoon" then
 		local effectdata = EffectData()
 		effectdata:SetOrigin(self:GetPos())
 		effectdata:SetScale(1)
@@ -81,6 +81,21 @@ function ENT:PhysicsCollide(data, phys)
 		util.Effect("Sparks", effectdata)
 		self:EmitSound( "npc/manhack/grind5.wav" )
 		self.Rebounded = true
+		self:SetOwner()
+		return
+	end
+
+	if Ent:IsValid() and Ent:GetClass() == "bs_hammer_shield" then
+		local eowner = Ent:GetNWEntity( "ShieldOwner" )
+		local effectdata = EffectData()
+		effectdata:SetOrigin(self:GetPos())
+		effectdata:SetScale(1)
+		effectdata:SetMagnitude(3)
+		util.Effect("Sparks", effectdata)
+--		self:EmitSound( "npc/manhack/grind5.wav" )
+		Ent:TakeDamage( 120, self.Owner, self.Entity)
+		self.Rebounded = true
+		self.Owner = eowner
 		self:SetOwner()
 		return
 	end

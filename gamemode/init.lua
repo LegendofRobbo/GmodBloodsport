@@ -102,6 +102,7 @@ function GM:PlayerLoadout( ply )
 --	ply:Give( "weapon_physgun" )
 	ply:Give( "weapon_bs_knife" )
 	ply:Give( "weapon_bs_magnum" )
+	ply:Give( "weapon_bs_gravhammer" )
 	ply:Give( "weapon_bs_harpoonbow" )
 	ply:Give( "weapon_bs_shotgun" )
 	ply:SetRunSpeed( 400 )
@@ -174,5 +175,4 @@ hook.Add( "EntityTakeDamage", "BSTakeDamage", function( ent, dmg )
 		net.Start( "DamageFlashes" )
 		net.Send( ent )
 	end
-
 end )

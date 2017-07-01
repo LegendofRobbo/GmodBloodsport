@@ -116,6 +116,17 @@ function SWEP:Think()
 			mins = Vector( -siz, -siz, -siz ),
 			maxs = Vector( siz, siz, siz )
 		} )
+		if tr.Entity and tr.Entity:IsValid() and tr.Entity:GetClass() == "bs_hammer_shield" then
+			local d = DamageInfo()
+			d:SetDamage( 1 )
+			d:SetAttacker( self.Owner )
+			d:SetDamageType( DMG_SLASH )
+			tr.Entity:TakeDamageInfo( d )
+			self.Owner:SetVelocity( self.Owner:GetVelocity() * -1.5 + Vector( 0, 0, 200 ) )
+			self.LungeHasHit = true
+			return
+		end
+
 		if tr.Entity and tr.Entity:IsPlayer() then
 --			tr.Entity:Kill()
 			local d = DamageInfo()
