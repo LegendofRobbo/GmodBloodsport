@@ -12,6 +12,7 @@ SWEP.HoldType			= "knife"
 SWEP.Spawnable			= true
 SWEP.AdminSpawnable		= false
 SWEP.Category			= "Bloodsport"
+SWEP.DrawCrosshair = false
 
 SWEP.Author				= ""
 SWEP.Contact			= ""
@@ -59,8 +60,27 @@ end
 
 
 function SWEP:SetupDataTables()
-	self:NetworkVar( "Float", 0, "ThrowCharge" )
+--	self:NetworkVar( "Float", 0, "ThrowCharge" )
 end
+
+
+local circle = Material( "particle/particle_ring_wave_additive" )
+local circle2 = Material( "particle/particle_ring_sharp" )
+local beam = Material("trails/laser")
+function SWEP:DrawHUD()
+	local me = LocalPlayer()
+
+	local x = ScrW() / 2
+	local y = ScrH() / 2
+
+	surface.SetDrawColor( Color(255,255,255, 50) )
+	surface.DrawRect( x + 5, y - 1, 10, 2 )
+	surface.DrawRect( x - 15, y - 1, 10, 2 )
+
+end
+
+
+
 
 /*---------------------------------------------------------
    Name: SWEP:Deploy()

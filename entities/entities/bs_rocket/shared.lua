@@ -1,0 +1,6 @@
+ENT.Type 			= "anim"
+ENT.PrintName		= "Knife"
+ENT.Author			= "LegendofRobbo"
+ENT.Contact			= ""
+ENT.Purpose			= ""
+ENT.Instructions		= ""

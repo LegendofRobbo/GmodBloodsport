@@ -12,6 +12,7 @@ SWEP.HoldType			= "knife"
 SWEP.Spawnable			= true
 SWEP.AdminSpawnable		= false
 SWEP.Category			= "Bloodsport"
+SWEP.DrawCrosshair = false
 
 SWEP.Author				= ""
 SWEP.Contact			= ""
@@ -68,6 +69,27 @@ function SWEP:Deploy()
 	return true
 end
 
+
+function SWEP:DrawHUD()
+	local me = LocalPlayer()
+
+	local x = ScrW() / 2
+	local y = ScrH() / 2
+
+	surface.SetDrawColor( Color(255,255,255, 50) )
+	surface.DrawRect( x - 1, y + 10, 2, 20 )
+--	surface.DrawRect( x - 1, y - 16, 2, 10 )
+	surface.DrawRect( x + 15, y - 1, 10, 2 )
+	surface.DrawRect( x - 25, y - 1, 10, 2 )
+
+	surface.SetDrawColor( Color(255,255,255, 150) )
+--	surface.DrawRect( x - 1, y + 5, 2, 2 )
+--	surface.DrawRect( x - 1, y - 6, 2, 2 )
+	surface.DrawRect( x + 5, y - 1, 2, 2 )
+	surface.DrawRect( x - 6, y - 1, 2, 2 )
+
+
+end
 
 function SWEP:PrimaryAttack()
 

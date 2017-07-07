@@ -12,6 +12,7 @@ SWEP.HoldType			= "melee2"
 SWEP.Spawnable			= true
 SWEP.AdminSpawnable		= false
 SWEP.Category			= "Bloodsport"
+SWEP.DrawCrosshair = false
 
 SWEP.Author				= ""
 SWEP.Contact			= ""
@@ -57,6 +58,27 @@ function SWEP:Deploy()
 	self:SetEnergyFlash( false )
 
 	return true
+end
+
+local circle = Material( "particle/particle_ring_wave_additive" )
+local circle2 = Material( "particle/particle_ring_sharp" )
+local beam = Material("trails/laser")
+function SWEP:DrawHUD()
+	local me = LocalPlayer()
+
+	local x = ScrW() / 2
+	local y = ScrH() / 2
+
+	surface.SetDrawColor( Color(255,255,255, 50) )
+	surface.SetMaterial( circle )
+	surface.DrawTexturedRect( x - 15, y - 15, 30, 30 )
+	surface.SetDrawColor( Color(255,255,255, 20) )
+	surface.DrawRect( x - 10, y + 25, 20, 2 )
+	surface.DrawRect( x - 8, y + 35, 16, 2 )
+	surface.DrawRect( x - 6, y + 45, 12, 2 )
+
+	surface.SetDrawColor( Color(255,255,255, 150) )
+
 end
 
 function SWEP:Holster()
@@ -127,6 +149,10 @@ function SWEP:Bash()
 		d:SetDamageForce( self.Owner:GetAimVector() * 31210 )
 		tr.Entity:TakeDamageInfo( d )
 	end
+
+	local effectdata = EffectData()
+	effectdata:SetOrigin( tr.HitPos )
+	util.Effect("bs_shockwave_hammer", effectdata)
 
 	util.ScreenShake( self.Owner:GetPos(), 10, 15, 0.5, 300 )
 	self.Weapon:EmitSound("npc/scanner/cbot_energyexplosion1.wav", 90, math.random( 95, 105 ) )

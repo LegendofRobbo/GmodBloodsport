@@ -87,6 +87,8 @@ function GM:PlayerInitialSpawn( ply )
 	ply:SetTeam(1)
 end
 
+hook.Add( "PlayerDeath", "NoBurnieGlitches", function( ply ) timer.Simple( 0.1, function() if ply:IsValid() then ply:Extinguish() end end ) end )
+
 function GM:ShowSpare1( ply )
 	ply:ChatPrint( "ur gay lmao" )
 end
@@ -99,12 +101,7 @@ function GM:ShowHelp( ply )
 end
 
 function GM:PlayerLoadout( ply )
---	ply:Give( "weapon_physgun" )
 	ply:Give( "weapon_bs_knife" )
-	ply:Give( "weapon_bs_magnum" )
-	ply:Give( "weapon_bs_gravhammer" )
-	ply:Give( "weapon_bs_harpoonbow" )
-	ply:Give( "weapon_bs_shotgun" )
 	ply:SetRunSpeed( 400 )
 	ply:SetWalkSpeed( 350 )
 --	ply:SetJumpPower( 200 )
@@ -126,6 +123,8 @@ function GM:PlayerShouldTaunt( ply, actid )
 	return true
 end
 
+function GM:OnDamagedByExplosion( ply, dmginfo )
+end
 
 function GM:OnPlayerHitGround( ply, water, floating_obj, speed )
 	if !water then 

@@ -59,6 +59,38 @@ local function DoKillScoring( ply, atk, dmg )
 		end
 	end
 
+	-- rawkets --
+	if atk.RocketJumped and atk.RocketJumped >= CurTime() then
+		pts = pts + 25
+		table.insert( specs, "Rocketjump Combo" )
+	end
+
+	-- multi kills --
+	if !atk.KillCombo then atk.KillCombo = 0 atk.KillComboTimeout = CurTime() + 3 end
+	if atk.KillComboTimeout > CurTime() then
+		atk.KillComboTimeout = CurTime() + 3
+		atk.KillCombo = atk.KillCombo + 1
+	else
+		atk.KillComboTimeout = CurTime() + 3
+		atk.KillCombo = 1
+	end
+
+	if atk.KillCombo == 2 then
+		pts = pts + 25
+		table.insert( specs, "Double Kill" )
+	elseif atk.KillCombo == 3 then
+		pts = pts + 25
+		table.insert( specs, "Triple Kill" )
+	elseif atk.KillCombo == 4 then
+		pts = pts + 50
+		table.insert( specs, "Quadra Kill" )
+	elseif atk.KillCombo >= 5 then
+		pts = pts + 75
+		table.insert( specs, "Genocide" )
+		atk.KillCombo = 0
+	end
+
+
 	local specstring = ""
 	if table.Count( specs ) > 0 then specstring = specstring.." Special Modifiers:" end
 
@@ -72,16 +104,31 @@ end
 hook.Add( "DoPlayerDeath", "BS_ScoreKills", DoKillScoring ) 
 
 
-concommand.Add( "testpickups", function( ply, cmd, args )
+local wepz = {
+	[1] = "Combat Knife",
+	[2] = "Gravity Hammer",
+	[3] = "Magnum Pistol",
+	[4] = "Harpoon Bow",
+	[5] = "Shotgun",
+	[6] = "Rocket Launcher",
+	[7] = "Flamethrower",
+}
+
+local function SpawnPickup( ply, num )
 	if !ply:IsValid() or !ply:Alive() then return end
 	local tr = ply:GetEyeTraceNoCursor()
+	local str = wepz[num]
+	if !str then return end
 
 	local fag = ents.Create( "bs_weapon_pickup" )
+	fag:SetNWString( "PickupType", str )
 	fag:SetPos( tr.HitPos )
 	fag:SetAngles( Angle( 0, 0, 0 ) )
 	fag:Spawn()
 	fag:Activate()
+end
 
-	timer.Simple( 10, function() if fag:IsValid() then fag:Remove() end end)
 
+concommand.Add( "testpickups", function( ply, cmd, args )
+	SpawnPickup( ply, tonumber(args[1]) )
 end)

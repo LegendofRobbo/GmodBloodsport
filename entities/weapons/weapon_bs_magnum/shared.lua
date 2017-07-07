@@ -196,7 +196,7 @@ function SWEP:Think()
 			if self:GetBoolets() < 4 and self.NxLoadBullet <= CurTime() then
 				if SERVER then 
 					self:SetBoolets( self:GetBoolets() + 1 )
-					self.NxLoadBullet = CurTime() + 0.6
+					self.NxLoadBullet = CurTime() + 0.5
 					self.Owner:EmitSound( "weapons/shotgun/shotgun_reload2.wav", 70, 70 )
 				end
 			end
