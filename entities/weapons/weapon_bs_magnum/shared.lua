@@ -24,7 +24,7 @@ SWEP.Primary.Recoil		= 5
 SWEP.Primary.Damage		= 0
 SWEP.Primary.NumShots		= 0
 SWEP.Primary.Cone			= 0.075
-SWEP.Primary.Delay 		= 0.3
+SWEP.Primary.Delay 		= 0.2
 
 SWEP.Primary.ClipSize		= -1
 SWEP.Primary.DefaultClip	= 0
@@ -130,7 +130,7 @@ function SWEP:PrimaryAttack()
 
 	if IsFirstTimePredicted() then self.Owner:ViewPunch( Angle( -1, 0, 0 ) ) end
 
-	self:CSShootBullet( 50, 0, 1, 0.008 )
+	self:CSShootBullet( 50, 0, 1, 0 )
 end
 
 function SWEP:SecondaryAttack()

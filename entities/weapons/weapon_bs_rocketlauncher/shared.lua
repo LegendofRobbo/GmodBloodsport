@@ -106,8 +106,8 @@ function SWEP:PrimaryAttack()
 		self.Owner:ViewPunch(anglo)
 	end
 
-	self:SetNextPrimaryFire( CurTime() + 1 )
-	self:SetNextSecondaryFire( CurTime() + 1 )
+	self:SetNextPrimaryFire( CurTime() + 0.9 )
+	self:SetNextSecondaryFire( CurTime() + 0.9 )
 	self:EmitSound( "weapons/M79/40mmthump.wav", 90, 180, 0.5 )
 end
 

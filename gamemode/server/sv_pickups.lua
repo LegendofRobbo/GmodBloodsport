@@ -1,3 +1,10 @@
+--[[==========================================================
+Bloodsport Weapon/Loot pickups system, Created by LegendofRobbo
+This was smashed together at 2am at maximum velocity
+so yeah, it works... lets just leave it at that
+============================================================]]
+
+
 BS_LootDrops = {}
 
 local wepz = {
@@ -123,9 +130,3 @@ concommand.Add( "bs_clearpickups", function( ply, cmd, args )
 	SavePickups()
 	for k, v in pairs( ents.FindByClass( "bs_weapon_pickup" ) ) do v:Remove() end
 end )
-
-
-
---concommand.Add( "testpickups", function( ply, cmd, args )
---	SpawnPickup( ply, tonumber(args[1]) )
---end)

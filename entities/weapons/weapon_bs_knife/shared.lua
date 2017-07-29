@@ -144,6 +144,7 @@ function SWEP:Think()
 			tr.Entity:TakeDamageInfo( d )
 			self.Owner:SetVelocity( self.Owner:GetVelocity() * -1.5 + Vector( 0, 0, 200 ) )
 			self.LungeHasHit = true
+			self.Weapon:SendWeaponAnim(ACT_VM_DRAW)
 			return
 		end
 
@@ -178,6 +179,7 @@ function SWEP:Think()
 		if tr.Entity and tr.Entity:IsPlayer() then
 			self.Owner:SetVelocity( self.Owner:GetVelocity() * -1.5 + Vector( 0, 0, 200 ) )
 			self.Owner:EmitSound( "physics/flesh/flesh_impact_hard1.wav" )
+			self.Weapon:SendWeaponAnim(ACT_VM_DRAW)
 --			tr.Entity:EmitSound( "weapons/knife/knife_stab.wav", 90, 120 ) 
 			self.LungeHasHit = true
 		end

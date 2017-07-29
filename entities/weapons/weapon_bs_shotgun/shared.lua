@@ -68,12 +68,6 @@ function SWEP:DrawHUD()
 	surface.DrawRect( x + gap, y - 1, 10, 2 )
 	surface.DrawRect( x - (gap + 10), y - 1, 10, 2 )
 
---	surface.SetDrawColor( Color(255,255,255, 150) )
---	surface.DrawRect( x - 1, y + 5, 2, 2 )
---	surface.DrawRect( x - 1, y - 6, 2, 2 )
---	surface.DrawRect( x + 5, y - 1, 2, 2 )
---	surface.DrawRect( x - 6, y - 1, 2, 2 )
-
 end
 
 function SWEP:PrimaryAttack()
@@ -88,7 +82,8 @@ function SWEP:PrimaryAttack()
 
 	if IsFirstTimePredicted() then self.Owner:ViewPunch( Angle( -2, 0, 0 ) ) end
 
-	self:CSShootBullet( 15, 0, 9, 0.075 )
+	self:CSShootBullet( 12, 0, 10, 0.075 )
+
 end
 
 function SWEP:SecondaryAttack()
@@ -96,22 +91,29 @@ function SWEP:SecondaryAttack()
 	self.Weapon:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
 	self.Weapon:SetNextSecondaryFire( CurTime() + self.Primary.Delay * 2 )
 
-	self.Weapon:EmitSound(self.Primary.Sound2)
+	self.Weapon:EmitSound( "weapons/flaregun/fire.wav", 90, 50)
 	self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
 	self.Owner:SetAnimation( PLAYER_ATTACK1 )
 
 
-	if IsFirstTimePredicted() then self.Owner:ViewPunch( Angle( -2, 0, 0 ) ) end
+	if IsFirstTimePredicted() then self.Owner:ViewPunch( Angle( -8, 1, 0 ) ) end
 
 	local ef = EffectData()
 	ef:SetOrigin( self.Owner:GetShootPos() + self.Owner:GetAimVector() * 2 )
 	ef:SetScale( 1 )
-	ef:SetStart( Vector(125, 125, 125) )
+	ef:SetStart( Vector(25, 25, 25) )
 	util.Effect( "bs_smoke_puff", ef )
 
+	local ef = EffectData()
+	ef:SetOrigin( self.Owner:GetShootPos() + self.Owner:GetAimVector() * 20 )
+	ef:SetScale( 2 )
+	ef:SetStart( Vector(25, 25, 25) )
+	util.Effect( "bs_smoke_puff", ef )
+
+	self:CSShootBullet( 14, 0, 10, 0.575 )
 
 	if SERVER then
-		self.Owner:SetVelocity( self.Owner:EyeAngles():Forward() * -400 )
+		self.Owner:SetVelocity( self.Owner:EyeAngles():Forward() * -400 + Vector( 0, 0, 100 ) )
 	end
 
 --	self:CSShootBullet( 10, 0, 8, 0.1 )

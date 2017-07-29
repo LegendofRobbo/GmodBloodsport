@@ -3,14 +3,17 @@ function EFFECT:Init(data)
 	local Pos = data:GetOrigin()
 	local Norm = data:GetNormal()
 	local owner = data:GetEntity()
+	local ownervel = Vector( 0, 0, 0 )
 
-	if !owner:IsValid() then return end
+	if owner:IsValid() then 
+		ownervel = (owner:GetVelocity() / 2)
+	end
 		
 	for i = 1, 4 do
 		local particle = emitter:Add("effects/muzzleflash"..math.random(1,4), Pos )
 
 		if (particle) then
-			particle:SetVelocity( Norm * 400 + (VectorRand() * 50) + (owner:GetVelocity() / 2) )
+			particle:SetVelocity( Norm * 400 + (VectorRand() * 50) + ownervel )
 				
 			particle:SetDieTime( 0.5 + math.Rand( 0.1, 0.3 ) )
 				
@@ -38,7 +41,7 @@ function EFFECT:Init(data)
 		local particle = emitter:Add("particle/smokesprites_000"..math.random( 1, 5 ), Pos )
 
 		if (particle) then
-			particle:SetVelocity( Norm * 500 + (VectorRand() * 10) + (owner:GetVelocity() / 2) )
+			particle:SetVelocity( Norm * 500 + (VectorRand() * 10) + ownervel )
 				
 			particle:SetDieTime( 1 + math.Rand( 0.1, 0.5 ) )
 				

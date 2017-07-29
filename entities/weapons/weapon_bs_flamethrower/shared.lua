@@ -46,6 +46,7 @@ SWEP.NxGrenade = 0
 function SWEP:Deploy()
 
 	self.Weapon:SetNextPrimaryFire( CurTime() + 0.8 )
+	self.Weapon:SetNextSecondaryFire( CurTime() + 0.8 )
 	self:SetHoldType( "shotgun" )
 	self.Burnies = CreateSound( self.Weapon, "ambient/fire/fire_small_loop1.wav" )
 
@@ -69,7 +70,7 @@ end
 
 function SWEP:PrimaryAttack()
 	self.Weapon:SetNextPrimaryFire( CurTime() + 0.1 )
-	self.Weapon:SetNextSecondaryFire( CurTime() + 0.1 )
+--	self.Weapon:SetNextSecondaryFire( CurTime() + 0.1 )
 
 	local effectdata = EffectData()
 	effectdata:SetOrigin( self.Owner:GetShootPos() + self.Owner:GetAimVector() * 1 + self.Owner:GetUp() * -10 + self.Owner:GetRight() * 5 )
@@ -86,21 +87,32 @@ function SWEP:PrimaryAttack()
 		self.Burnies:Play()
 	end
 
+	/*
+	local trc = util.TraceLine( {start = self.Owner:GetShootPos(), endpos = self.Owner:GetShootPos() + self.Owner:GetAimVector() * 160, filter = self.Owner} )
+	if trc.Hit then
+		local effectdata = EffectData()
+		effectdata:SetOrigin( trc.HitPos )
+		effectdata:SetNormal( Vector( 0, 0, 0 ) )
+		effectdata:SetEntity( game.GetMap() )
+		util.Effect("bs_flamethrower_flames", effectdata)
+	end
+	*/
+
 	if CLIENT then return end
 
 --	local gays = ents.FindInCone( self.Owner:GetShootPos(), self.Owner:GetAimVector(), 200, 50 )
-	local gays = ents.FindInSphere( self.Owner:GetShootPos() + self.Owner:GetAimVector() * 130, 75 ) 
+	local gays = ents.FindInSphere( self.Owner:GetShootPos() + self.Owner:GetAimVector() * 160, 100 ) 
 	for k, v in pairs( gays ) do
 		self:IgniteNapalm( v )
 
 		if v == self.Owner or !v:IsPlayer() then continue end
 		if !v:Alive() or !v:Visible( self.Owner ) then continue end
 		local d = DamageInfo()
-		d:SetDamage( 5 )
+		d:SetDamage( 7 )
 		d:SetAttacker( self.Owner )
 		d:SetDamageType( DMG_BURN )
 		v:TakeDamageInfo( d )
-		v:Ignite( 5 )
+		v:Ignite( 4 )
 	end
 
 end
@@ -109,10 +121,10 @@ function SWEP:SecondaryAttack()
 	if self.NxGrenade > CurTime() then return end
 
 	self.Weapon:EmitSound("weapons/ar2/ar2_altfire.wav")
-	self.Weapon:SetNextPrimaryFire(CurTime() + 0.5 )
-	self.Weapon:SetNextSecondaryFire(CurTime() + 1 )
+--	self.Weapon:SetNextPrimaryFire(CurTime() + 0.5 )
+	self.Weapon:SetNextSecondaryFire(CurTime() + 1.5 )
 
-	self.NxGrenade = CurTime() + 1.5
+	self.NxGrenade = CurTime() + 1
 
 	local ef = EffectData()
 	ef:SetOrigin( self.Owner:GetShootPos() + self.Owner:GetAimVector() * 5 )
@@ -146,6 +158,8 @@ end
 
 function SWEP:IgniteNapalm( ent )
 	if !ent:IsValid() or ent:GetClass() != "bs_napalm_grenade" then return end
+	if !ent:GetNWBool( "ActiveNapalm", false ) then ent:Ignite( 20 ) return end
+
 	ent:NapalmExplode()
 end
 

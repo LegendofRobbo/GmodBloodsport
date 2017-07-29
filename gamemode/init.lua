@@ -7,11 +7,21 @@ DeriveGamemode("base")
 
 AddCSLuaFile( "cl_init.lua" )
 
-team.SetUp( 1, "Niggers", Color( 150, 150, 150, 255 ) )
+team.SetUp( 1, "Dead People", Color( 150, 150, 150, 255 ) )
+team.SetUp( 2, "Blue Team", Color( 150, 150, 250, 255 ) )
+team.SetUp( 3, "Red Team", Color( 250, 150, 150, 255 ) )
+
+team.SetUp( 4, "Red", Color( 250, 150, 150, 255 ) )
+team.SetUp( 5, "Green", Color( 150, 250, 150, 255 ) )
+team.SetUp( 6, "Blue", Color( 150, 150, 250, 255 ) )
+team.SetUp( 7, "Yellow", Color( 250, 250, 150, 255 ) )
+team.SetUp( 8, "Purple", Color( 150, 100, 250, 255 ) )
+team.SetUp( 9, "Sky", Color( 150, 255, 255 ) )
+team.SetUp( 10, "Orange", Color( 255, 155, 55 ) )
 
 hook.Add( "CanProperty", "nope", function( ply, property, ent) if !ply:IsSuperAdmin() then return false end end)
 
-util.AddNetworkString( "GMC_ReloadModules" )
+--util.AddNetworkString( "GMC_ReloadModules" )
 
 local gmname = "bloodsport"
 for k, v in pairs( file.Find( "gamemodes/"..gmname.."/gamemode/server/*", "GAME" ) ) do
@@ -51,40 +61,24 @@ function GM:PlayerConnect( name, ip )
 	--bat me
 end
 
-local testers = {
-	"76561198028288732", -- me
-	"76561198083117557", -- lies
-	"76561198035059571", -- erad
-	"76561198097352513", -- zultan
-	"76561198028646454", -- malus
-	"76561198090537451", -- sync
-}
-
-function GM:CheckPassword( id64, ip, password, theirpass, name ) 
-	if password != "" and theirpass != password then
-		for k, v in pairs( player.GetAll() ) do v:ChatPrint( name.." [ "..id64.." ] tried to connect with the wrong password" ) end
-		return false, "Wrong password faggot!" 
-	end
-	if !table.HasValue( testers, id64 ) then
-		for k, v in pairs( player.GetAll() ) do v:ChatPrint( name.." [ "..id64.." ] tried to connect but isn't whitelisted" ) end
-		return false, "You aren't on the whitelist! contact LegendofRobbo if you want to get in"
-	end
-	return true
-end
-
-
 function GM:PlayerSpawn( ply )
 	self.BaseClass:PlayerSpawn( ply )
 	ply:SetPVarFloat( "CanWallJump", 1 )
-	ply:SetTeam( 1 )
+--	ply:SetTeam( 1 )
 	ply:SetModel( "models/player/kleiner.mdl" )
 	ply:AllowFlashlight( true )
 	ply:SetCanZoom( false )
+	ply:SetNWBool( "X2Combo", false )
+end
+
+function GM:RollNewDeathmatchTeam( ply )
+	if !ply:IsValid() then return end
+	ply:SetTeam( math.random( 4, 10 ) )
 end
 
 function GM:PlayerInitialSpawn( ply )
 	self.BaseClass:PlayerInitialSpawn( ply )
-	ply:SetTeam(1)
+	self:RollNewDeathmatchTeam( ply )
 end
 
 hook.Add( "PlayerDeath", "NoBurnieGlitches", function( ply ) timer.Simple( 0.1, function() if ply:IsValid() then ply:Extinguish() end end ) end )
@@ -102,7 +96,7 @@ end
 
 function GM:PlayerLoadout( ply )
 	ply:Give( "weapon_bs_knife" )
-	ply:SetRunSpeed( 400 )
+	ply:SetRunSpeed( 450 )
 	ply:SetWalkSpeed( 350 )
 --	ply:SetJumpPower( 200 )
 end
@@ -118,6 +112,18 @@ function GM:PlayerNoClip( ply )
 	return false
 end
 
+function GM:ScalePlayerDamage( ply, hitgroup, dmginfo )
+
+	if ( hitgroup == HITGROUP_HEAD ) then
+		dmginfo:ScaleDamage( 2 )
+	end
+
+	local wep = ply:GetActiveWeapon()
+	if wep and wep:IsValid() and wep:GetClass() == "weapon_bs_gravhammer" then
+		if wep:GetBlocking() then dmginfo:ScaleDamage( 0.5 ) end
+	end
+
+end
 
 function GM:PlayerShouldTaunt( ply, actid )
 	return true
@@ -156,22 +162,30 @@ hook.Add("SetupMove", "Walljumping", function( ply, cmd )
 		ply:EmitSound( "physics/flesh/flesh_impact_hard1.wav" )
 		ply:SetPVarFloat( "CanWallJump", 0 )
 		ply.NextWallJump = CurTime() + 0.3
-
-		local ef = EffectData()
-		ef:SetOrigin( ply:GetPos() )
-		ef:SetScale( 1.5 )
-		ef:SetStart( Vector(225, 225, 225) )
-		util.Effect( "bs_smoke_puff", ef )
+		local ppos = ply:GetPos()
+		-- fixes some weird networking issue where players can't see their own walljump smoke puffs
+		timer.Simple( 0, function()
+			local ef = EffectData()
+			ef:SetOrigin( ppos )
+			ef:SetScale( 1.5 )
+			ef:SetStart( Vector(125, 125, 125) )
+			util.Effect( "bs_smoke_puff", ef )
+		end)
 
 	end
 
 end)
 
 
+
+
 util.AddNetworkString( "DamageFlashes" )
-hook.Add( "EntityTakeDamage", "BSTakeDamage", function( ent, dmg ) 
+hook.Add( "EntityTakeDamage", "BSTakeDamage", function( ent, dmg )
 	if ent:IsPlayer() and ent:Alive() then
 		net.Start( "DamageFlashes" )
 		net.Send( ent )
 	end
+
+	if ent:IsPlayer() and dmg:GetDamageType() == DMG_CRUSH or dmg:GetDamageType() == DMG_FALL then return true end
+
 end )

@@ -22,9 +22,15 @@ BS_PickupData = {
 	["Shotgun"] = { col = Color( 250, 250, 150 ), model = "models/weapons/w_shot_m3super90.mdl", pickup = function( ply, ent ) return GenericGiveWeapon( ply, "weapon_bs_shotgun" ) end },
 	["Rocket Launcher"] = { col = Color( 250, 150, 150 ), model = "models/weapons/w_rl7.mdl", angoffset = Angle( 260, 0, 0 ), z = 20, pickup = function( ply, ent ) return GenericGiveWeapon( ply, "weapon_bs_rocketlauncher" ) end },
 	["Flamethrower"] = { col = Color( 250, 200, 150 ), model = "models/weapons/w_flamer.mdl", angoffset = Angle( 0, 0, 0 ), pickup = function( ply, ent ) return GenericGiveWeapon( ply, "weapon_bs_flamethrower" ) end },
-	["Health Kit"] = { col = Color( 50, 150, 50 ), model = "models/Items/HealthKit.mdl", isitem = true, angoffset = Angle( 0, 0, 0 ), pickup = function( ply, ent ) if ply:Health() < 100 then ply:SetHealth( 100 ) return true else return false end end },
-	["Armor Charger"] = { col = Color( 100, 100, 150 ), model = "models/Items/HealthKit.mdl", isitem = true, angoffset = Angle( 0, 0, 0 ), pickup = function( ply, ent ) if ply:Armor() < 100 then ply:SetArmor( math.Clamp( ply:Armor() + 50, 0, 100 ) ) return true else return false end end },
+	["Grenade Launcher"] = { col = Color( 250, 150, 250 ), model = "models/weapons/w_milkor_mgl1.mdl", angoffset = Angle( 0, 0, 0 ), pickup = function( ply, ent ) return GenericGiveWeapon( ply, "weapon_bs_nadelauncher" ) end },
+	["Thunder Gun"] = { col = Color( 150, 250, 250 ), model = "models/weapons/w_sanctum2_tr.mdl", angoffset = Angle( 0, 0, 0 ), pickup = function( ply, ent ) return GenericGiveWeapon( ply, "weapon_bs_thundergun" ) end },
+	["Health Kit"] = { col = Color( 50, 150, 50 ), model = "models/Items/HealthKit.mdl", isitem = true, angoffset = Angle( 0, 0, 0 ), z = - 10, pickup = function( ply, ent ) if ply:Health() < 100 then ply:SetHealth( 100 ) return true else return false end end },
+	["Armor Charger"] = { col = Color( 100, 100, 150 ), model = "models/Items/battery.mdl", isitem = true, angoffset = Angle( 0, 0, 0 ), scale = 2, z = -10, pickup = function( ply, ent ) if ply:Armor() < 100 then ply:SetArmor( math.Clamp( ply:Armor() + 50, 0, 100 ) ) return true else return false end end },
+	["Combo Booster"] = { col = Color( 250, 100, 50 ), model = "models/Gibs/HGIBS.mdl", isitem = true, angoffset = Angle( 0, 0, 0 ), z = -10, pickup = function( ply, ent ) if !ply:GetNWBool( "X2Combo", false ) then ply:SetNWBool( "X2Combo", true ) return true else return false end end },
 }
+
+
+
 
 function ENT:Initialize()
 
@@ -80,7 +86,8 @@ function ENT:Think()
 				if ref.isitem then
 					v:EmitSound( "items/smallmedkit1.wav" )
 				else
-					v:EmitSound( "items/gift_drop.wav" )
+--					v:EmitSound( "items/gift_drop.wav" )
+					v:EmitSound( "items/ammopickup.wav" )
 				end
  				self:Remove()
 	 			break

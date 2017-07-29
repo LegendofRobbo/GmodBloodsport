@@ -10,9 +10,9 @@ function ENT:Initialize()
 	
 	self:SetModel("models/props_junk/harpoon002a.mdl")
 	self:PhysicsInit(SOLID_VPHYSICS)
-	self.Entity:SetMoveType(MOVETYPE_VPHYSICS)
-	self.Entity:SetSolid(SOLID_VPHYSICS)
-	local phys = self.Entity:GetPhysicsObject()
+	self:SetMoveType(MOVETYPE_VPHYSICS)
+	self:SetSolid(SOLID_VPHYSICS)
+	local phys = self:GetPhysicsObject()
 	--self.NextThink = CurTime() +  1
 
 	if (phys:IsValid()) then
@@ -37,40 +37,27 @@ function ENT:Initialize()
 	self.FleshHit = { 
 	Sound("weapons/crossbow/bolt_skewer1.wav")}
 
---	self:GetPhysicsObject():SetMass(2)	
-
---	self.Entity:SetUseType(SIMPLE_USE)
-	util.SpriteTrail(self.Entity, 0, Color(155, 155, 155, 155), false, 2, 10, 1, 5 / ((2 + 10) * 0.5), "trails/smoke.vmt")
+	util.SpriteTrail(self, 0, Color(155, 155, 155, 155), false, 2, 10, 1, 5 / ((2 + 10) * 0.5), "trails/smoke.vmt")
 end
 
-/*---------------------------------------------------------
-   Name: ENT:Think()
----------------------------------------------------------*/
 function ENT:Think()
 	
 	self.lifetime = self.lifetime or CurTime() + 20
-
---	self:SetAngles( self:GetVelocity():GetNormal():Angle() )
 
 	if CurTime() > self.lifetime then
 		self:Remove()
 	end
 end
 
-/*---------------------------------------------------------
-   Name: ENT:Disable()
----------------------------------------------------------*/
 function ENT:Disable()
 	self.PhysicsCollide = function() end
 	self.lifetime = CurTime() + 10
 
-	self.Entity:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+	self:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 end
 
-
-
-function ENT:PhysicsCollide(data, phys)
-	
+function ENT:KillMe( data, phys )
+	if !self:IsValid() then return end
 	local Ent = data.HitEntity
 
 	if Ent:IsValid() and Ent:GetClass() == "bs_harpoon" then
@@ -93,7 +80,7 @@ function ENT:PhysicsCollide(data, phys)
 		effectdata:SetMagnitude(3)
 		util.Effect("Sparks", effectdata)
 --		self:EmitSound( "npc/manhack/grind5.wav" )
-		Ent:TakeDamage( 120, self.Owner, self.Entity)
+		Ent:TakeDamage( 120, self.Owner, self)
 		self.Rebounded = true
 		self.Owner = eowner
 		self:SetOwner()
@@ -107,7 +94,7 @@ function ENT:PhysicsCollide(data, phys)
 			if data.Speed > 400 then
 				self:EmitSound(Sound("weapons/crossbow/bolt_skewer1.wav"))
 				self:SetPos(data.HitPos - data.HitNormal * 10)
-				self:SetAngles(self.Entity:GetAngles())
+				self:SetAngles( self.OAngles )
 				self:GetPhysicsObject():EnableMotion(false)
 			else
 				self:EmitSound(self.Hit[math.random(1, #self.Hit)])
@@ -122,10 +109,9 @@ function ENT:PhysicsCollide(data, phys)
 			self:Disable()
 		end
 
-		Ent:TakeDamage( 120, self.Owner, self.Entity)
-
 		if (Ent:IsPlayer() or Ent:IsNPC() or Ent:GetClass() == "prop_ragdoll") then
 
+			Ent:TakeDamage( 175, self.Owner, self)
 			local effectdata = EffectData()
 			effectdata:SetStart(data.HitPos)
 			effectdata:SetOrigin(data.HitPos)
@@ -141,5 +127,10 @@ function ENT:PhysicsCollide(data, phys)
 		end
 	end
 
-	self.Entity:SetOwner(NUL)
+	self:SetOwner()
+end
+
+function ENT:PhysicsCollide(data, phys)
+	self.OAngles = self:GetAngles()
+	timer.Simple( 0, function() self:KillMe( data, phys ) end )
 end

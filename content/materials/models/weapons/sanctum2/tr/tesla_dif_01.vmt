@@ -1,0 +1,17 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "models\weapons\sanctum2\tr\tesla_dif_01"
+	"$bumpmap" "models\weapons\sanctum2\tr\tesla_nor_01"
+
+	"$halflambert" "1"
+
+	"$phong" "1"
+	"$phongtint" "[.3 .4 .5]"
+	"$phongexponent" "10"
+	"$phongboost" ".8"
+	"$phongfresnelranges" "[.25 .5 .75]"
+
+	"$rimlight" "1"
+	"$rimlightexponent" "1"
+	"$rimlightboost" "8"
+}

@@ -116,36 +116,39 @@ function SWEP:Bash()
 	if CLIENT then return end
 	self.Owner:ViewPunch( Angle( 5, 0, 0 ))
 
-	local siz = 10
+	local siz = 14
 	local tr = util.TraceHull( {
 		start = self.Owner:GetShootPos(),
-		endpos = self.Owner:GetShootPos() + self.Owner:GetAimVector() * 110,
+		endpos = self.Owner:GetShootPos() + self.Owner:GetAimVector() * 160,
 		filter = self.Owner,
 		mins = Vector( -siz, -siz, -siz ),
 		maxs = Vector( siz, siz, siz )
 	} )
 	if !tr.Hit then return end
 
-	local blasted = ents.FindInSphere( tr.HitPos, 150 )
+	local blasted = ents.FindInSphere( tr.HitPos, 180 )
 	for k, v in pairs( blasted ) do
-		if !v:IsPlayer() or v == self.Owner then continue end
+--		if !v:IsPlayer() or v == self.Owner then continue end
+		if !v:IsPlayer() then continue end
 		local dist = v:GetPos():Distance( tr.HitPos )
-			local d = DamageInfo()
-			d:SetDamage( math.Clamp( 100 - (dist * 0.85), 1, 100 )  )
-			d:SetAttacker( self.Owner )
-			d:SetDamageType( DMG_CRUSH )
-			v:TakeDamageInfo( d )
-		local mul = 600
-		if !v:IsOnGround() then mul = 300 end
+			if v != self.Owner then
+				local d = DamageInfo()
+				d:SetDamage( math.Clamp( 120 - (dist * 0.85), 1, 120 )  )
+				d:SetAttacker( self.Owner )
+				d:SetDamageType( DMG_GENERIC )
+				v:TakeDamageInfo( d )
+			end
+		local mul = 700
+		if !v:IsOnGround() then mul = 350 end
 		v:SetPos( v:GetPos() + Vector( 0, 0, 3 ) )
 		v:SetVelocity( ( (v:GetPos() - tr.HitPos):GetNormal() * mul ) + Vector( 0, 0, mul / 4 ) )
 	end
 
 	if tr.Entity:IsPlayer() then
 		local d = DamageInfo()
-		d:SetDamage( 100 )
+		d:SetDamage( 150 )
 		d:SetAttacker( self.Owner )
-		d:SetDamageType( DMG_CRUSH )
+		d:SetDamageType( DMG_GENERIC )
 		d:SetDamageForce( self.Owner:GetAimVector() * 31210 )
 		tr.Entity:TakeDamageInfo( d )
 	end
@@ -204,8 +207,10 @@ local flicker = Material( "particle/particle_sphere" )
 local flash = Material( "particle/particle_ring_wave_additive" )
 
 function SWEP:DrawWorldModel()
-	
-	local Pos, Ang = self.Owner:GetBonePosition( self.Owner:LookupBone("ValveBiped.Bip01_R_Hand") )
+	if !self:IsValid() or !self.Owner:IsValid() then return end
+	local boner = self.Owner:LookupBone("ValveBiped.Bip01_R_Hand")
+	if !boner then return end
+	local Pos, Ang = self.Owner:GetBonePosition( boner )
 	
 	self:SetRenderOrigin( Pos + Ang:Forward() * 4 + Ang:Up() * -2 + Ang:Right() * 2 )
 	Ang:RotateAroundAxis(Ang:Up(),90)

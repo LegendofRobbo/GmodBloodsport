@@ -1,6 +1,6 @@
 ENT.Type 			= "anim"
-ENT.PrintName		= "Knife"
-ENT.Author			= "LegendofRobbo"
+ENT.PrintName		= "Harpoon"
+ENT.Author			= "LegendofRobbo + M9k Devs"
 ENT.Contact			= ""
 ENT.Purpose			= ""
 ENT.Instructions		= ""

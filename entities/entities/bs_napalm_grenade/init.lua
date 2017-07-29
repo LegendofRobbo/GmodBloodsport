@@ -98,7 +98,7 @@ function ENT:NapalmExplode()
 	self.lifetime = CurTime() + 5
 	self.Flaming = true
 
-	self:EmitSound( "ambient/explosions/explode_5.wav", 80, math.random( 220, 250 ) )
+	self:EmitSound( "ambient/fire/mtov_flame2.wav", 80, math.random( 70, 90 ) )
 end
 
 
@@ -122,6 +122,8 @@ function ENT:Disable()
 	util.Effect( "WaterSplash", effectdata, true, true )
 
 	self:SetNWBool( "ActiveNapalm", true )
+
+	if self:IsOnFire() then self:NapalmExplode() end
 
 end
 

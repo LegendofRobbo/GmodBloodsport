@@ -1,11 +1,38 @@
+--[[==========================================================
+Bloodsport round scoring system, Created by LegendofRobbo
+============================================================]]
+
+
 local playa = FindMetaTable( "Player" )
 
+util.AddNetworkString( "BS_Killfeed" )
+
+function playa:AddKillMessage( attacker, modifiers, points )
+	if !self:IsValid() then return end
+--	if !attacker:IsValid() or !attacker:IsPlayer() then attacker = self end
+		
+	net.Start( "BS_Killfeed" )
+	net.WriteEntity( self ) -- its cheaper to send 2 entities than it is to do net.WriteColor() with their team colours
+	net.WriteEntity( attacker )
+	net.WriteString( modifiers )
+	net.WriteUInt( points, 16 )
+	net.Broadcast()
+end
+
+
+
 local function DoKillScoring( ply, atk, dmg )
-	if !ply:IsValid() or !ply:IsPlayer() then return end
-	if !atk:IsValid() or !atk:IsPlayer() then return end
-	if ply == atk then return end
-	local pts = 100
+	if !ply:IsValid() then return end
+	if !atk:IsValid() then return end
+	if rounds:GetActiveRoundTable().Type == "None" then return end
+
 	local inf = dmg:GetInflictor()
+	if inf and inf:IsValid() and inf:GetClass() == "bs_harpoon" then
+		atk = inf.Owner
+	end
+	if !atk:IsPlayer() then ply:AddKillMessage( game.GetWorld(), "", 0 ) return end
+	if ply == atk then ply:AddKillMessage( ply, "", 0 ) return end
+	local pts = 100
 	local specs = {}
 
 	-- generic --
@@ -15,15 +42,26 @@ local function DoKillScoring( ply, atk, dmg )
 	end
 
 	local siz = 16
+	local tr = util.TraceHull( { start = ply:GetPos(), endpos = ply:GetPos() + Vector( 0, 0, -80 ), filter = ply, mask = MASK_SHOT, mins = Vector( -siz, -siz, -siz ), maxs = Vector( siz, siz, siz ) })
+	if !tr.HitWorld then
+		pts = pts + 50
+		table.insert( specs, "Flyswatter" )
+	end
+
 	local tr = util.TraceHull( { start = atk:GetPos(), endpos = atk:GetPos() + Vector( 0, 0, -80 ), filter = atk, mask = MASK_SHOT, mins = Vector( -siz, -siz, -siz ), maxs = Vector( siz, siz, siz ) })
 	if !tr.HitWorld then
 		pts = pts + 25
 		table.insert( specs, "Midair" )
 	end
 
-	if atk.NextWallJump and atk.NextWallJump > (CurTime() - 0.3) then
+	if atk.NextWallJump and atk.NextWallJump > (CurTime() - 0.5) then
 		pts = pts + 25
 		table.insert( specs, "Walljump Combo" )
+	end
+
+	if atk:Alive() and (atk:Health() + atk:Armor()) < 30 then
+		pts = pts + 25
+		table.insert( specs, "Edge of Death" )
 	end
 
 	if !atk:Alive() then
@@ -37,20 +75,26 @@ local function DoKillScoring( ply, atk, dmg )
 		table.insert( specs, "You call that a knife?" )
 	end
 
-	if inf:IsValid() and inf:GetClass() == "bs_knife_thrown" and ply:GetPos():Distance( atk:GetPos() ) > 800 then
+	if inf:IsValid() and inf:GetClass() == "bs_knife_thrown" and ply:GetPos():Distance( atk:GetPos() ) > 750 then
 		pts = pts + 50
 		table.insert( specs, "Knife Longshot" )
 	end
 
 	-- harpoons --
 	if inf:IsValid() and inf:GetClass() == "bs_harpoon" then
-		if ply:GetPos():Distance( atk:GetPos() ) > 1500 then
-		pts = pts + 25
-		table.insert( specs, "Harpoon Longshot" )
+		if ply:GetPos():Distance( atk:GetPos() ) > 1200 then
+			pts = pts + 25
+			table.insert( specs, "Harpoon Longshot" )
 		end
 		if inf.Rebounded then
 			pts = pts + 100
 			table.insert( specs, "Rebound" )
+		end
+
+		local tr = util.TraceHull( { start = ply:GetPos(), endpos = ply:GetPos() + Vector( 0, 0, -80 ), filter = ply, mask = MASK_SHOT, mins = Vector( -siz, -siz, -siz ), maxs = Vector( siz, siz, siz ) })
+		if !tr.HitWorld then
+			pts = pts + 100
+			table.insert( specs, "Aerial Skewer" )
 		end
 
 		if atk:Alive() and !inf:Visible( atk ) then
@@ -60,7 +104,7 @@ local function DoKillScoring( ply, atk, dmg )
 	end
 
 	-- rawkets --
-	if atk.RocketJumped and atk.RocketJumped >= CurTime() then
+	if atk.RocketJumped and atk.RocketJumped >= CurTime() and !atk:IsOnGround() then
 		pts = pts + 25
 		table.insert( specs, "Rocketjump Combo" )
 	end
@@ -68,10 +112,10 @@ local function DoKillScoring( ply, atk, dmg )
 	-- multi kills --
 	if !atk.KillCombo then atk.KillCombo = 0 atk.KillComboTimeout = CurTime() + 3 end
 	if atk.KillComboTimeout > CurTime() then
-		atk.KillComboTimeout = CurTime() + 3
+		atk.KillComboTimeout = CurTime() + 4
 		atk.KillCombo = atk.KillCombo + 1
 	else
-		atk.KillComboTimeout = CurTime() + 3
+		atk.KillComboTimeout = CurTime() + 4
 		atk.KillCombo = 1
 	end
 
@@ -79,56 +123,51 @@ local function DoKillScoring( ply, atk, dmg )
 		pts = pts + 25
 		table.insert( specs, "Double Kill" )
 	elseif atk.KillCombo == 3 then
-		pts = pts + 25
+		pts = pts + 50
 		table.insert( specs, "Triple Kill" )
 	elseif atk.KillCombo == 4 then
-		pts = pts + 50
+		pts = pts + 75
 		table.insert( specs, "Quadra Kill" )
 	elseif atk.KillCombo >= 5 then
-		pts = pts + 75
+		pts = pts + 100
 		table.insert( specs, "Genocide" )
 		atk.KillCombo = 0
 	end
 
-
-	local specstring = ""
-	if table.Count( specs ) > 0 then specstring = specstring.." Special Modifiers:" end
-
-	for k, v in pairs( specs ) do
-		specstring = specstring.." "..v
+	if atk:GetNWBool( "X2Combo", false ) then
+		pts = pts * 2
+		table.insert( specs, "X2 Boost" )
+		atk:SetNWBool( "X2Combo", false )
 	end
 
-	atk:ChatPrint( "You killed "..ply:Nick().." for "..pts.." points!"..specstring )
+	local specstring = ""
+	if table.Count( specs ) > 0 then specstring = specstring.." Modifiers:" end
+
+	for k, v in pairs( specs ) do
+		local seper = " "
+		if k >= 2 then seper = " + " end
+		specstring = specstring..seper..v
+	end
+
+	ply:AddKillMessage( atk, specstring, pts )
+	atk:AddScore( pts )
 
 end
 hook.Add( "DoPlayerDeath", "BS_ScoreKills", DoKillScoring ) 
 
 
-local wepz = {
-	[1] = "Combat Knife",
-	[2] = "Gravity Hammer",
-	[3] = "Magnum Pistol",
-	[4] = "Harpoon Bow",
-	[5] = "Shotgun",
-	[6] = "Rocket Launcher",
-	[7] = "Flamethrower",
-}
+local playa = FindMetaTable( "Player" )
 
-local function SpawnPickup( ply, num )
-	if !ply:IsValid() or !ply:Alive() then return end
-	local tr = ply:GetEyeTraceNoCursor()
-	local str = wepz[num]
-	if !str then return end
-
-	local fag = ents.Create( "bs_weapon_pickup" )
-	fag:SetNWString( "PickupType", str )
-	fag:SetPos( tr.HitPos )
-	fag:SetAngles( Angle( 0, 0, 0 ) )
-	fag:Spawn()
-	fag:Activate()
+function playa:AddScore( pts )
+	local score = self:GetNWInt( "BS_Score", 0 )
+	self:SetNWInt( "BS_Score", score + pts)
 end
 
+function playa:SetScore( pts )
+	self:SetNWInt( "BS_Score", pts)
+end
 
-concommand.Add( "testpickups", function( ply, cmd, args )
-	SpawnPickup( ply, tonumber(args[1]) )
-end)
+function playa:RemoveScoreScore( pts )
+	local score = self:GetNWInt( "BS_Score", 0 )
+	self:SetNWInt( "BS_Score", math.Clamp( score - pts, 0, 999999 ) )
+end

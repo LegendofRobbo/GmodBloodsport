@@ -5,8 +5,18 @@ GM.Website 	= ""
 
 DeriveGamemode("base")
 
+team.SetUp( 1, "Dead People", Color( 150, 150, 150, 255 ) )
+team.SetUp( 2, "Blue Team", Color( 150, 150, 250, 255 ) )
+team.SetUp( 3, "Red Team", Color( 250, 150, 150, 255 ) )
 
-team.SetUp( 1, "Niggers", Color( 150, 150, 150, 255 ) )
+team.SetUp( 4, "Red", Color( 250, 150, 150, 255 ) )
+team.SetUp( 5, "Green", Color( 150, 250, 150, 255 ) )
+team.SetUp( 6, "Blue", Color( 150, 150, 250, 255 ) )
+team.SetUp( 7, "Yellow", Color( 250, 250, 150, 255 ) )
+team.SetUp( 8, "Purple", Color( 150, 100, 250, 255 ) )
+team.SetUp( 9, "Sky", Color( 150, 255, 255 ) )
+team.SetUp( 10, "Orange", Color( 255, 155, 55 ) )
+
 hook.Add( "CanProperty", "nope", function( ply, property, ent) if !ply:IsSuperAdmin() then return false end end)
 
 function GM:Initialize()

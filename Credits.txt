@@ -1,0 +1,8 @@
+Soundtrack taken from ratchet and clank 3, crowd sounds ripped from random youtube vids
+RPG7 and MGL models taken from m9k, creds to whoever originally put them up on gamebanana
+Harpoon and throwing knife entities based on modified and improved m9k code, creds to worshipper and inconcievable
+Thundergun model taken from the game Sanctuary 2
+Flamethrower model ported from fallout 3, credits go to bethesda
+
+All other custom content present in the gamemode have been created entirely by LegendofRobbo 
+(basically the default map, the gravity hammer model/animations and some misc hud elements)

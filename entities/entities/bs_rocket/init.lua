@@ -80,7 +80,6 @@ function ENT:PhysicsCollide( data, phys )
 	util.Effect("bs_shockwave", effectdata)
 
 
-
 	if !self.Mode then
 		util.BlastDamage( self, self.Owner, self:GetPos(), 250, 30 )
 		self:EmitSound( "ambient/explosions/explode_4.wav", 90, math.random( 180, 200 ) )
@@ -89,13 +88,13 @@ function ENT:PhysicsCollide( data, phys )
 			if !v:IsPlayer() then continue end
 			local dist = v:GetPos():Distance( self:GetPos() )
 			local mul = 600
-			if !v:IsOnGround() then mul = 300 end
+			if !v:IsOnGround() then mul = mul / 2 end
 			v:SetPos( v:GetPos() + Vector( 0, 0, 3 ) )
 			v:SetVelocity( ( ( v:GetPos() - self:GetPos() ):GetNormal() * mul ) + Vector( 0, 0, mul / 4 ) )
 			v.RocketJumped = CurTime() + 3
 		end
 	else
-		util.BlastDamage( self, self.Owner, self:GetPos(), 200, 110 )
+		util.BlastDamage( self, self.Owner, self:GetPos(), 250, 120 )
 		self:EmitSound( "ambient/explosions/explode_5.wav", 90, math.random( 180, 200 ) )
 	end
 

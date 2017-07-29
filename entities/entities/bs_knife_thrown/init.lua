@@ -73,18 +73,17 @@ function ENT:Disable()
 	self.Entity:SetCollisionGroup(COLLISION_GROUP_WEAPON)
 end
 
-/*---------------------------------------------------------
-   Name: ENT:PhysicsCollided()
----------------------------------------------------------*/
-function ENT:PhysicsCollide(data, phys)
-	
+
+-- fuck this warning spam off from physicscollide
+function ENT:KillMe( data, phys )
+	if !self:IsValid() then return end
 	local Ent = data.HitEntity
 	if !(IsValid(Ent) or Ent:IsWorld()) then return end
 
 	if Ent:IsWorld() then
 			util.Decal("ManhackCut", data.HitPos + data.HitNormal, data.HitPos - data.HitNormal)
 
-			if self.Entity:GetVelocity():Length() > 400 then
+			if self.Entity:GetVelocity():Length() > 250 then
 				self:EmitSound("npc/roller/blade_out.wav", 60)
 				self:SetPos(data.HitPos - data.HitNormal * 10)
 				self:SetAngles(data.HitNormal:Angle() + Angle(40, 0, 0))
@@ -129,4 +128,12 @@ function ENT:PhysicsCollide(data, phys)
 	end
 
 	self.Entity:SetOwner(NUL)
+end
+
+
+/*---------------------------------------------------------
+   Name: ENT:PhysicsCollided()
+---------------------------------------------------------*/
+function ENT:PhysicsCollide(data, phys)
+	timer.Simple( 0, function() self:KillMe(data, phys) end )
 end

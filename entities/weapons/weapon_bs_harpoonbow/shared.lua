@@ -78,13 +78,10 @@ function SWEP:DrawHUD()
 
 	surface.SetDrawColor( Color(255,255,255, 50) )
 	surface.DrawRect( x - 1, y + 10, 2, 20 )
---	surface.DrawRect( x - 1, y - 16, 2, 10 )
 	surface.DrawRect( x + 15, y - 1, 10, 2 )
 	surface.DrawRect( x - 25, y - 1, 10, 2 )
 
 	surface.SetDrawColor( Color(255,255,255, 150) )
---	surface.DrawRect( x - 1, y + 5, 2, 2 )
---	surface.DrawRect( x - 1, y - 6, 2, 2 )
 	surface.DrawRect( x + 5, y - 1, 2, 2 )
 	surface.DrawRect( x - 6, y - 1, 2, 2 )
 
@@ -117,8 +114,8 @@ function SWEP:PrimaryAttack()
 	local phys = sticker:GetPhysicsObject()
 		phys:SetVelocity(self.Owner:GetAimVector() * 9000)
 	end
-	if SERVER and !self.Owner:IsNPC() then
-		local anglo = Angle(-10, -5, 0)		
+	if SERVER and IsFirstTimePredicted() then
+		local anglo = Angle(-8, -2, 0)		
 		self.Owner:ViewPunch(anglo)
 	end
 end
@@ -126,8 +123,10 @@ end
 function SWEP:GetViewModelPosition( pos, ang )
 	if self.LungeForward > 0 then
 		self.LungeForward = self.LungeForward - 0.05
---		ang:RotateAroundAxis( ang:Forward(), self.LungeForward )
-		return pos + ang:Forward() * self.LungeForward, ang 
+		ang:RotateAroundAxis( ang:Forward(), self.LungeForward / 2 )
+		ang:RotateAroundAxis( ang:Right(), self.LungeForward / 2 )
+		ang:RotateAroundAxis( ang:Up(), self.LungeForward / 5 )
+		return pos + ang:Forward() * self.LungeForward + ang:Up() * -(self.LungeForward / 4), ang 
 	end
 	return pos, ang
 end
@@ -136,8 +135,8 @@ end
 function SWEP:SecondaryAttack()
 
 	self.Owner:SetAnimation( PLAYER_ATTACK1 )
-	self.LungeForward = 7
-	self.Owner:ViewPunch( Angle(-3, 0, 0) )
+	self.LungeForward = 9
+	if IsFirstTimePredicted() then self.Owner:ViewPunch( Angle(-3, 0, 0) ) end
 	self.Weapon:SetNextPrimaryFire(CurTime() + 0.8)
 	self.Weapon:SetNextSecondaryFire(CurTime() + 0.8)
 	self.Weapon:EmitSound( "npc/vort/claw_swing1.wav", 75, 80 )
@@ -150,6 +149,17 @@ function SWEP:SecondaryAttack()
 		mins = Vector( -siz, -siz, -siz ),
 		maxs = Vector( siz, siz, siz )
 	} )
+
+	if tr.HitWorld then
+		tr.Entity:EmitSound("physics/metal/sawblade_stick1.wav", 100, 100, 0.75 )
+		local effectdata = EffectData()
+		effectdata:SetOrigin( tr.HitPos )
+		effectdata:SetNormal( tr.HitNormal )
+		effectdata:SetScale( 0.1 )
+		effectdata:SetMagnitude( 0.1 )
+		util.Effect("Sparks", effectdata)
+		if SERVER and IsFirstTimePredicted() then self.Owner:ViewPunch( Angle(-3, 2, 0) ) end
+	end
 
 	if tr.Entity and tr.Entity:IsPlayer() and SERVER then
 
@@ -176,7 +186,7 @@ function SWEP:SecondaryAttack()
 		util.Effect("bloodspray", effectdata)
 
 		tr.Entity:EmitSound("weapons/crossbow/bolt_skewer1.wav", 100, 90)
-		tr.Entity:TakeDamage( 120, self.Owner, self )
+		tr.Entity:TakeDamage( 125, self.Owner, self )
 
 	end
 end
