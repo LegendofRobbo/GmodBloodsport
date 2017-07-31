@@ -24,7 +24,7 @@ local function SavePickups()
 	file.Write( "bloodsport/spawns/" .. string.lower(game.GetMap()) .. ".txt", tabstr )
 	print( "loot table saved!" )
 end
-concommand.Add( "bs_saveloot", SavePickups )
+--concommand.Add( "bs_saveloot", SavePickups )
 
 local function LoadPickups()
 	if not file.IsDir("bloodsport/spawns", "DATA") then
@@ -40,7 +40,7 @@ local function LoadPickups()
 	end
 
 end
-concommand.Add( "bs_loadloot", LoadPickups )
+--concommand.Add( "bs_loadloot", LoadPickups )
 
 
 local function SpawnWeapon( pos )
@@ -109,7 +109,8 @@ end
 timer.Create( "BS_PickupLogic", 10, 0, SpawnAllPickups )
 
 
-concommand.Add( "bs_addweapon", function( ply, cmd, args ) 
+concommand.Add( "bs_addweapon", function( ply, cmd, args )
+	if !ply:IsSuperAdmin() then return end
 	local tr = ply:GetEyeTraceNoCursor()
 	local poz = tr.HitPos
 	table.insert( BS_LootDrops, poz )
@@ -117,7 +118,8 @@ concommand.Add( "bs_addweapon", function( ply, cmd, args )
 	SpawnAllPickups()
 end )
 
-concommand.Add( "bs_addloot", function( ply, cmd, args ) 
+concommand.Add( "bs_addloot", function( ply, cmd, args )
+	if !ply:IsSuperAdmin() then return end
 	local tr = ply:GetEyeTraceNoCursor()
 	local poz = tr.HitPos
 	table.insert( BS_LootDrops, { p = poz } )
@@ -125,7 +127,8 @@ concommand.Add( "bs_addloot", function( ply, cmd, args )
 	SpawnAllPickups()
 end )
 
-concommand.Add( "bs_clearpickups", function( ply, cmd, args ) 
+concommand.Add( "bs_clearpickups", function( ply, cmd, args )
+	if !ply:IsSuperAdmin() then return end
 	BS_LootDrops = {}
 	SavePickups()
 	for k, v in pairs( ents.FindByClass( "bs_weapon_pickup" ) ) do v:Remove() end
