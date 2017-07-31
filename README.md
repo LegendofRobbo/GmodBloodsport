@@ -11,6 +11,16 @@ Features:
 - A custom made arena map to fight on
 - Crowd cheering and music (may or may not work properly, source engine audio is pretty jank)
 
+How 2 install:
+- Place the gamemode in your gamemodes folder
+- Place the map config into your data folder (for the default map)
+- Unzip the content into the gamemode folder (should look like garrysmod/gamemodes/bloodsport/content) on both the server and your gmod install
+
+How 2 set up a new map:
+- Bloodsport has no particular map requirements and can run on any suitable map
+- Use the commands bs_addweapon and bs_addloot to place pickup spawns around the map
+- Use bs_clearpickups if you screw something up
+
 Features that would have been in if i hadn't wasted so much time:
 - Randomly generated mutators to spice up each round type
 - More possible gametypes for each round
