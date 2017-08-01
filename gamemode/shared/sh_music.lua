@@ -4,11 +4,18 @@ Bloodsport music system, Created by LegendofRobbo
 -- this code is absolutely horrendous, i would recommend not copying anything i did here
 
 if CLIENT then
-	local songs = {
-		[1] = CreateSound( game.GetWorld(), "bloodsport/BSmusic1.mp3" ),
-		[2] = CreateSound( game.GetWorld(), "bloodsport/BSmusic2.mp3" ),
-		[3] = CreateSound( game.GetWorld(), "bloodsport/BSmusic3.mp3" ),
-	}
+	local songs = {}
+	timer.Create( "GiveMeAids", 0.5, 0, function() 
+		if game.GetWorld() and game.GetWorld():IsValid() then
+			songs = {
+				[1] = CreateSound( game.GetWorld(), "bloodsport/BSmusic1.mp3" ),
+				[2] = CreateSound( game.GetWorld(), "bloodsport/BSmusic2.mp3" ),
+				[3] = CreateSound( game.GetWorld(), "bloodsport/BSmusic3.mp3" ),
+			}
+			timer.Remove( "GiveMeAids" )
+		end
+	end)
+
 	local crowdlooplen = 8.173
 	local crowdplaying = false
 	local nxcrowdloop = 0
