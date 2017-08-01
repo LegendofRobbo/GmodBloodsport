@@ -7,6 +7,8 @@ DeriveGamemode("base")
 
 AddCSLuaFile( "cl_init.lua" )
 
+resource.AddWorkshop( "1096827799" )
+
 team.SetUp( 1, "Dead People", Color( 150, 150, 150, 255 ) )
 team.SetUp( 2, "Blue Team", Color( 150, 150, 250, 255 ) )
 team.SetUp( 3, "Red Team", Color( 250, 150, 150, 255 ) )
