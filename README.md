@@ -15,6 +15,8 @@ Features:
 How 2 install:
 - Place the gamemode in your gamemodes folder
 - Place the map config into your data folder (for the default map)
+- Put this in your workshop DL: http://steamcommunity.com/sharedfiles/filedetails/?id=1096827799
+OR
 - Unzip the content into the gamemode folder (should look like garrysmod/gamemodes/bloodsport/content) on both the server and your gmod install
 
 
