@@ -43,6 +43,7 @@ function rounds:StartRound( type, name )
 	if !roundtypes[type][name] then error( "you are calling rounds:StartRound() with a valid type but invalid round name!" ) end
 	local roundtab = roundtypes[type][name]
 	rounds.Active = { ["Type"] = type, ["Name"] = name, ["TimeLeft"] = CurTime() + roundtab.Time, ["Mutators"] = "" }
+	StopRoundSong()
 	StartNewRoundSong()
 	SendAnnouncement( "Round Starting: "..name.."!" )
 	self:SendRoundInfo()
@@ -117,12 +118,15 @@ function rounds:SendRoundInfo( ply )
 	end
 end
 
-hook.Add( "PlayerInitialSpawn", "gimmeroundinfo", function( ply ) 
-	rounds:SendRoundInfo( ply )
-	local rtab = rounds:GetActiveRound()
-	if rtab.Type != "None" then
-		StartNewRoundSong( ply )
-	end
+hook.Add( "PlayerInitialSpawn", "gimmeroundinfo", function( ply )
+	timer.Simple( 0.5, function()
+		if !ply:IsValid() then return end
+		rounds:SendRoundInfo( ply )
+		local rtab = rounds:GetActiveRound()
+		if rtab.Type != "None" then
+			StartNewRoundSong( ply )
+		end
+	end)
 end)
 
 
