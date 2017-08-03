@@ -5,31 +5,38 @@ Bloodsport music system, Created by LegendofRobbo
 
 if CLIENT then
 	local songs = {}
-	timer.Create( "GiveMeAids", 0.5, 0, function() 
-		if game.GetWorld() and game.GetWorld():IsValid() then
-			songs = {
-				[1] = CreateSound( game.GetWorld(), "bloodsport/BSmusic1.mp3" ),
-				[2] = CreateSound( game.GetWorld(), "bloodsport/BSmusic2.mp3" ),
-				[3] = CreateSound( game.GetWorld(), "bloodsport/BSmusic3.mp3" ),
-			}
-			timer.Remove( "GiveMeAids" )
-		end
+	local crowd = -1
+
+	local function MakeSounds()
+		if !game.GetWorld() or game.GetWorld() == NULL then return false end
+		if !isnumber( crowd ) then return false end
+		crowd = CreateSound( game.GetWorld(), "bloodsport/crowdbackground.wav" )
+		songs = {
+			[1] = CreateSound( game.GetWorld(), "bloodsport/BSmusic1.mp3" ),
+			[2] = CreateSound( game.GetWorld(), "bloodsport/BSmusic2.mp3" ),
+		}
+		return true
+	end
+
+	timer.Create( "GiveMeAids", 1, 0, function()
+		if MakeSounds() then timer.Remove( "GiveMeAids" ) end
 	end)
 
 	local crowdlooplen = 8.173
 	local crowdplaying = false
 	local nxcrowdloop = 0
 
-	net.Receive( "BS_SendSound", function() 
-		if !crowd then crowd = CreateSound( game.GetWorld(), "bloodsport/crowdbackground.wav" ) end
+	net.Receive( "BS_SendSound", function()
+		if isnumber( crowd ) then MakeSounds() end
 		if crowd and crowd:IsPlaying() then crowd:Stop() end
-		local newsong = songs[math.random( 1, 3 )]
+		local newsong = songs[math.random( 1, 2 )]
 		crowdplaying = true
       	newsong:SetSoundLevel( 0 )
     	newsong:Play()
 	end )
 
-	net.Receive( "BS_StopSound", function() 
+	net.Receive( "BS_StopSound", function()
+		if isnumber( crowd ) then MakeSounds() end
 		if crowd and crowd:IsPlaying() then crowd:Stop() end
 		crowdplaying = false
 		for k, v in pairs( songs ) do
@@ -38,7 +45,7 @@ if CLIENT then
 	end )
 
 	hook.Add( "Think", "ohgodwhatamidoing", function()
-		if !crowd then return end
+		if isnumber( crowd ) then return end
 		if crowdplaying then
 			if nxcrowdloop <= CurTime() then
 				if crowd:IsPlaying() then crowd:Stop() end
